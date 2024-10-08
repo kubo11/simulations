@@ -1,6 +1,7 @@
-#include "common.hh"
+#include "spring_app.hh"
 
 int main() {
-  test();
+  SpringApp app;
+  app.run();
   return 0;
 }
