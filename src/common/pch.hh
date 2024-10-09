@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include <thread>
 
 namespace fs = std::filesystem;
 

@@ -11,7 +11,7 @@ class App {
   void run();
 
  protected:
-  bool m_run;
+  bool m_run = true;
 
   virtual void update(float dt) = 0;
 
