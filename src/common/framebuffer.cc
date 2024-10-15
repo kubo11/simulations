@@ -22,12 +22,15 @@ Framebuffer::Framebuffer(unsigned int width, unsigned int height) : m_width(widt
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+  glCheckError();
 }
 
 Framebuffer::~Framebuffer() {
   glDeleteRenderbuffers(1, &m_rbo);
   glDeleteTextures(1, &m_texture_id);
   glDeleteFramebuffers(1, &m_fbo);
+  glCheckError();
 }
 
 void Framebuffer::resize(unsigned int width, unsigned int height) {
@@ -44,12 +47,20 @@ void Framebuffer::resize(unsigned int width, unsigned int height) {
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+  glCheckError();
+
   m_width = width;
   m_height = height;
 }
 
-void Framebuffer::bind() { glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); }
+void Framebuffer::bind() {
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+  glCheckError();
+}
 
-void Framebuffer::unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+void Framebuffer::unbind() {
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glCheckError();
+}
 
 GLuint Framebuffer::get_texture_id() const { return m_texture_id; }

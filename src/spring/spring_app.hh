@@ -4,10 +4,25 @@
 #include "pch.hh"
 
 #include "app.hh"
+#include "buffer.hh"
 #include "framebuffer.hh"
+#include "shader_program.hh"
 #include "spring.hh"
 #include "spring_ui.hh"
+#include "vertex_array.hh"
 #include "window.hh"
+
+struct SpringVertex {
+  glm::vec3 position;
+  glm::vec3 color;
+
+  SpringVertex() : position{0.0f, 0.0f, 0.0f}, color{0.0f, 0.0f, 0.0f} {}
+  SpringVertex(const glm::vec3& position, const glm::vec3& color) : position(position), color(color) {}
+
+  static std::vector<VertexAttribute> get_vertex_attributes() {
+    return {{.size = 3, .type = GL_FLOAT}, {.size = 3, .type = GL_FLOAT}};
+  }
+};
 
 class SpringApp : public App {
  public:
@@ -35,7 +50,11 @@ class SpringApp : public App {
   bool m_run_simulation = false;
   float m_dt;
 
+  std::unique_ptr<ShaderProgram> m_shader;
+  std::unique_ptr<VertexArray<SpringVertex>> m_vertex_array;
+
   void copy_ui_data();
+  void render_visualization();
 };
 
 #endif  // SIMULATIONS_SPRING_APP

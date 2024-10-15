@@ -37,6 +37,7 @@ void Window::update() {
 void Window::clear() {
   glClearColor(m_clear_color.r, m_clear_color.g, m_clear_color.b, m_clear_color.a);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glCheckError();
 }
 
 const std::string& Window::get_title() const { return m_title; }
@@ -55,6 +56,7 @@ bool Window::is_button_pressed(int button) { return glfwGetMouseButton(m_window,
 
 void Window::set_size(unsigned int width, unsigned int height) {
   glViewport(0, 0, width, height);
+  glCheckError();
   m_width = width;
   m_height = height;
 }

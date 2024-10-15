@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -15,10 +16,10 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include <thread>
 
 namespace fs = std::filesystem;
 
@@ -45,5 +46,8 @@ namespace fs = std::filesystem;
 #include <imgui_impl_opengl3.h>
 #include <implot.h>
 #include <misc/cpp/imgui_stdlib.h>
+
+// simulations
+#include "utils.hh"
 
 #endif  // SIMULATIONS_COMMON_PCH

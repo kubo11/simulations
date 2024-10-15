@@ -8,6 +8,8 @@ class Window {
   Window(const std::string& title, unsigned int width, unsigned int height, glm::vec3 clear_color);
   ~Window();
 
+  PREVENT_COPY(Window);
+
   void update();
   void clear();
 

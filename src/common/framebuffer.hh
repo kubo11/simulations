@@ -8,6 +8,8 @@ class Framebuffer {
   Framebuffer(unsigned int width, unsigned int height);
   ~Framebuffer();
 
+  PREVENT_COPY(Framebuffer);
+
   void resize(unsigned int width, unsigned int height);
   void bind();
   void unbind();

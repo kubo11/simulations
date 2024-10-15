@@ -14,7 +14,7 @@ SpringApp::SpringApp() : m_simulation_mtx() {
     throw std::runtime_error("Failed to initialize GLAD");
   }
 
-  m_framebuffer = std::make_unique<Framebuffer>(0.5 * m_window->get_width(), 0.7 * m_window->get_height());
+  m_framebuffer = std::make_unique<Framebuffer>(m_window->get_width(), m_window->get_height());
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
@@ -41,6 +41,17 @@ SpringApp::SpringApp() : m_simulation_mtx() {
       std::make_unique<Spring>(6.0f, m_ui->get_weight_mass(), m_ui->get_elasticity_coef(), m_ui->get_damping_coef(),
                                m_ui->get_weight_starting_position(), m_ui->get_weight_starting_velocity(),
                                m_ui->get_anchor_position_function(), m_ui->get_field_force_function());
+
+  m_shader = std::move(ShaderProgram::load("src/spring/shaders/basic"));
+  auto vertices = std::vector<SpringVertex>{{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+                                            {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+                                            {{0.0f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+  auto vertex_buffer = std::make_unique<Buffer<SpringVertex>>();
+  vertex_buffer->bind();
+  vertex_buffer->copy(vertices);
+  vertex_buffer->unbind();
+  m_vertex_array =
+      std::make_unique<VertexArray<SpringVertex>>(std::move(vertex_buffer), SpringVertex::get_vertex_attributes());
 }
 
 SpringApp::~SpringApp() {
@@ -53,6 +64,10 @@ SpringApp::~SpringApp() {
 void SpringApp::update(float dt) {
   m_window->clear();
   m_ui->update();
+  m_framebuffer->bind();
+  m_window->clear();
+  render_visualization();
+  m_framebuffer->unbind();
   m_window->update();
 }
 
@@ -65,7 +80,7 @@ void SpringApp::close_callback(GLFWwindow* window) {
 void SpringApp::framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
   SpringApp* app = static_cast<SpringApp*>(glfwGetWindowUserPointer(window));
   app->m_window->set_size(width, height);
-  app->m_framebuffer->resize(0.5 * width, 0.7 * height);
+  app->m_framebuffer->resize(width, height);
 }
 
 void SpringApp::simulation_loop() {
@@ -120,4 +135,12 @@ void SpringApp::copy_ui_data() {
   m_spring->anchor_position_function = std::move(m_ui->get_anchor_position_function());
   m_spring->field_force_function = std::move(m_ui->get_field_force_function());
   m_spring->reset(m_ui->get_weight_starting_position(), m_ui->get_weight_starting_velocity());
+}
+
+void SpringApp::render_visualization() {
+  m_shader->bind();
+  m_vertex_array->bind();
+  glDrawArrays(GL_TRIANGLES, 0, m_vertex_array->get_draw_size());
+  m_vertex_array->unbind();
+  m_shader->unbind();
 }
