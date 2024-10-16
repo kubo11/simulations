@@ -15,6 +15,8 @@ Window::Window(const std::string& title, unsigned int width, unsigned int height
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif  // __APPLE__
 
+  glfwWindowHint(GLFW_DEPTH_BITS, 32);
+
   m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
   if (m_window == NULL) {
     throw std::runtime_error("GLFW cannot create a window instance");

@@ -114,7 +114,7 @@ std::vector<std::pair<std::string, GLenum>> ShaderProgram::get_uniforms(GLuint i
     GLenum type;
     glGetActiveUniform(id, i, static_cast<GLsizei>(buffer.size()), &length, &size, &type, buffer.data());
 
-    if (length >= 1) {
+    if (length < 1) {
       throw std::runtime_error(std::format("Unable to get active uniform {} for program {}", i, id));
     }
 
@@ -150,7 +150,7 @@ std::vector<std::string> ShaderProgram::parse_uniform_names(const char* buffer, 
 
 GLuint ShaderProgram::get_uniform_location(GLuint id, const std::string& name) {
   auto location = glGetUniformLocation(id, name.c_str());
-  if (location <= 0) {
+  if (location < 0) {
     throw std::runtime_error(std::format("Invalid uniform location: {}", location));
   }
   glCheckError();

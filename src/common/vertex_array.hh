@@ -13,6 +13,11 @@ struct VertexAttribute {
 template <class T>
 class VertexArray {
  public:
+  VertexArray() : m_last_attribute(0), m_vertex_buffer(nullptr), m_element_buffer(nullptr) {
+    glGenVertexArrays(1, &m_id);
+    glCheckError();
+  }
+
   VertexArray(std::unique_ptr<Buffer<T>> vertex_buffer, const std::vector<VertexAttribute>& vertex_attributes,
               std::unique_ptr<Buffer<unsigned int>> element_buffer = nullptr)
       : m_last_attribute(0), m_vertex_buffer(std::move(vertex_buffer)), m_element_buffer(std::move(element_buffer)) {
@@ -48,11 +53,19 @@ class VertexArray {
     }
   }
 
-  Buffer<T>& get_vertex_buffer() { return *m_vertex_buffer; }
+  bool has_vertex_buffer() const { return m_vertex_buffer != nullptr; }
+
+  Buffer<T>& get_vertex_buffer() {
+    if (!has_vertex_buffer()) throw std::runtime_error("Invalid access: no vertex buffer");
+    return *m_vertex_buffer;
+  }
 
   bool has_element_buffer() const { return m_element_buffer != nullptr; }
 
-  Buffer<unsigned int>& get_element_buffer() { return *m_element_buffer; }
+  Buffer<unsigned int>& get_element_buffer() {
+    if (!has_element_buffer()) throw std::runtime_error("Invalid access: no element buffer");
+    return *m_element_buffer;
+  }
 
   unsigned int get_draw_size() const {
     return has_element_buffer() ? m_element_buffer->get_count() : m_vertex_buffer->get_count();

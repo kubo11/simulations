@@ -3,15 +3,16 @@
 
 #include "pch.hh"
 
+enum class BufferType { Array = 0, ElementArray = 1, Uniform = 2, Texture = 3, ShaderStorage = 4 };
+enum class BufferAccessMode { Read = 0, Write = 1, ReadWrite = 2 };
+enum class BufferUsageHint { Draw = 0, Read = 1, Copy = 2 };
+enum class BufferFrequencyHint { Static = 0, Dynamic = 1, Stream = 2 };
+
 template <class T = float>
 class Buffer {
  public:
-  enum class Type { Array = 0, ElementArray = 1, Uniform = 2, Texture = 3, ShaderStorage = 4 };
-  enum class AccessMode { Read = 0, Write = 1, ReadWrite = 2 };
-  enum class UsageHint { Draw = 0, Read = 1, Copy = 2 };
-  enum class FrequencyHint { Static = 0, Dynamic = 1, Stream = 2 };
-
-  Buffer(Type type = Type::Array, UsageHint usage = UsageHint::Draw, FrequencyHint frequency = FrequencyHint::Static)
+  Buffer(BufferType type = BufferType::Array, BufferUsageHint usage = BufferUsageHint::Draw,
+         BufferFrequencyHint frequency = BufferFrequencyHint::Static)
       : m_data{}, m_size(0), m_type(type), m_usage(usage), m_frequency(frequency) {
     glGenBuffers(1, &m_id);
     glCheckError();
@@ -27,7 +28,7 @@ class Buffer {
 
   const unsigned int get_size() const { return m_size; }
   const unsigned int get_count() const { return m_size / sizeof(T); }
-  const Type get_type() const { return m_type; }
+  const BufferType get_type() const { return m_type; }
 
   void bind() {
     glBindBuffer(buffer_type_to_gl(m_type), m_id);
@@ -69,21 +70,21 @@ class Buffer {
   std::vector<T> m_data;
   GLuint m_id;
 
-  const Type m_type;
-  const UsageHint m_usage;
-  const FrequencyHint m_frequency;
+  const BufferType m_type;
+  const BufferUsageHint m_usage;
+  const BufferFrequencyHint m_frequency;
 
-  static GLenum buffer_type_to_gl(Type type) {
+  static GLenum buffer_type_to_gl(BufferType type) {
     switch (type) {
-      case Type::Array:
+      case BufferType::Array:
         return GL_ARRAY_BUFFER;
-      case Type::ElementArray:
+      case BufferType::ElementArray:
         return GL_ELEMENT_ARRAY_BUFFER;
-      case Type::Uniform:
+      case BufferType::Uniform:
         return GL_UNIFORM_BUFFER;
-      case Type::Texture:
+      case BufferType::Texture:
         return GL_TEXTURE_BUFFER;
-      case Type::ShaderStorage:
+      case BufferType::ShaderStorage:
         return GL_SHADER_STORAGE_BUFFER;
 
       default:
@@ -91,13 +92,13 @@ class Buffer {
     }
   }
 
-  static GLenum buffer_access_mode_to_gl(AccessMode mode) {
+  static GLenum buffer_access_mode_to_gl(BufferAccessMode mode) {
     switch (mode) {
-      case AccessMode::Read:
+      case BufferAccessMode::Read:
         return GL_READ_ONLY;
-      case AccessMode::Write:
+      case BufferAccessMode::Write:
         return GL_WRITE_ONLY;
-      case AccessMode::ReadWrite:
+      case BufferAccessMode::ReadWrite:
         return GL_READ_WRITE;
 
       default:
@@ -105,39 +106,39 @@ class Buffer {
     }
   }
 
-  static GLenum buffer_hint_to_gl(FrequencyHint frequency, UsageHint usage) {
+  static GLenum buffer_hint_to_gl(BufferFrequencyHint frequency, BufferUsageHint usage) {
     switch (frequency) {
-      case FrequencyHint::Static:
+      case BufferFrequencyHint::Static:
         switch (usage) {
-          case UsageHint::Draw:
+          case BufferUsageHint::Draw:
             return GL_STATIC_DRAW;
-          case UsageHint::Read:
+          case BufferUsageHint::Read:
             return GL_STATIC_READ;
-          case UsageHint::Copy:
+          case BufferUsageHint::Copy:
             return GL_STATIC_COPY;
 
           default:
             return GL_NONE;
         }
-      case FrequencyHint::Dynamic:
+      case BufferFrequencyHint::Dynamic:
         switch (usage) {
-          case UsageHint::Draw:
+          case BufferUsageHint::Draw:
             return GL_DYNAMIC_DRAW;
-          case UsageHint::Read:
+          case BufferUsageHint::Read:
             return GL_DYNAMIC_READ;
-          case UsageHint::Copy:
+          case BufferUsageHint::Copy:
             return GL_DYNAMIC_COPY;
 
           default:
             return GL_NONE;
         }
-      case FrequencyHint::Stream:
+      case BufferFrequencyHint::Stream:
         switch (usage) {
-          case UsageHint::Draw:
+          case BufferUsageHint::Draw:
             return GL_STREAM_DRAW;
-          case UsageHint::Read:
+          case BufferUsageHint::Read:
             return GL_STREAM_READ;
-          case UsageHint::Copy:
+          case BufferUsageHint::Copy:
             return GL_STREAM_COPY;
 
           default:
