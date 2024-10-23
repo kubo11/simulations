@@ -44,28 +44,37 @@ SpringApp::SpringApp() : m_simulation_mtx() {
                                m_ui->get_weight_starting_position(), m_ui->get_weight_starting_velocity(),
                                m_ui->get_anchor_position_function(), m_ui->get_field_force_function());
 
-  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 2.0f, 1.6f, 4.0f, 45.0f,
+  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 4.0f, 1.6f, 8.0f, 45.0f,
                                       m_window->get_aspect_ratio(), 0.5f, 500.0f);
   m_spring_vertex_array = std::make_unique<VertexArray<int>>();
   m_spring_shader = std::move(ShaderProgram::load("src/spring/shaders/spring"));
   m_weight_shader = std::move(ShaderProgram::load("src/spring/shaders/weight"));
   auto vertices = std::vector<WeightVertex>{
-      {{-0.5f, -0.5f, 0.5f}, {0.2f, 0.2f, 0.2f}},  {{0.5f, -0.5f, 0.5f}, {0.2f, 0.2f, 0.2f}},
-      {{0.5f, 0.5f, 0.5f}, {0.2f, 0.2f, 0.2f}},    {{-0.5f, 0.5f, 0.5f}, {0.2f, 0.2f, 0.2f}},
-      {{-0.5f, -0.5f, -0.5f}, {0.2f, 0.2f, 0.2f}}, {{0.5f, -0.5f, -0.5f}, {0.2f, 0.2f, 0.2f}},
-      {{0.5f, 0.5f, -0.5f}, {0.2f, 0.2f, 0.2f}},   {{-0.5f, 0.5f, -0.5f}, {0.2f, 0.2f, 0.2f}}};
-  auto indices = std::vector<unsigned int>{0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 5, 4, 7, 7, 6, 5,
-                                           4, 0, 3, 3, 7, 4, 3, 2, 6, 6, 7, 3, 4, 5, 1, 1, 0, 4};
+      {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},   {{0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+      {{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},     {{0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+      {{-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},    {{-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+      {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},    {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+      {{0.5f, 0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},    {{0.5f, 0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+      {{0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},     {{0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
+      {{0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}},  {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}},
+      {{-0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}},  {{-0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}},
+      {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}},   {{0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}},
+      {{-0.5f, -0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}}, {{-0.5f, -0.5f, 0.5f}, {-1.0f, 0.0f, 0.0f}},
+      {{-0.5f, 0.5f, 0.5f}, {-1.0f, 0.0f, 0.0f}},   {{-0.5f, 0.5f, 0.5f}, {-1.0f, 0.0f, 0.0f}},
+      {{-0.5f, 0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}},  {{-0.5f, -0.5f, -0.5f}, {-1.0f, 0.0f, 0.0f}},
+      {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},    {{0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+      {{0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},    {{0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+      {{-0.5f, 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},   {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+      {{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}}, {{0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}},
+      {{0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}},   {{0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}},
+      {{-0.5f, -0.5f, 0.5f}, {0.0f, -1.0f, 0.0f}},  {{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f, 0.0f}},
+  };
   auto vertex_buffer = std::make_unique<Buffer<WeightVertex>>();
   vertex_buffer->bind();
   vertex_buffer->copy(vertices);
   vertex_buffer->unbind();
-  auto element_buffer = std::make_unique<Buffer<unsigned int>>(BufferType::ElementArray);
-  element_buffer->bind();
-  element_buffer->copy(indices);
-  element_buffer->unbind();
-  m_weight_vertex_array = std::make_unique<VertexArray<WeightVertex>>(
-      std::move(vertex_buffer), WeightVertex::get_vertex_attributes(), std::move(element_buffer));
+  m_weight_vertex_array =
+      std::make_unique<VertexArray<WeightVertex>>(std::move(vertex_buffer), WeightVertex::get_vertex_attributes());
 }
 
 SpringApp::~SpringApp() {
@@ -125,7 +134,8 @@ void SpringApp::simulation_loop() {
                              m_spring->get_weight_acceleration(), m_spring->get_elasticity_force(),
                              m_spring->get_damping_force(), m_spring->get_field_force(),
                              m_spring->get_anchor_position(), m_spring->get_t());
-    m_model_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, m_spring->get_weight_position(), 0.0f));
+    m_weight_model_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, m_spring->get_weight_position(), 0.0f));
+    m_spring_model_mat = glm::translate(m_weight_model_mat, glm::vec3(0.0f, 0.5f, 0.0f));
     {
       std::lock_guard<std::mutex> guard(m_simulation_mtx);
       if (!m_run_simulation) return;
@@ -174,23 +184,23 @@ void SpringApp::copy_ui_data() {
 
 void SpringApp::render_visualization() {
   m_spring_shader->bind();
-  m_spring_shader->set_uniform_value("model", m_model_mat);
+  m_spring_shader->set_uniform_value("model", m_spring_model_mat);
   m_spring_shader->set_uniform_value("view", m_camera->get_view_matrix());
   m_spring_shader->set_uniform_value("projection", m_camera->get_projection_matrix());
-  m_spring_shader->set_uniform_value("h0", 1.5f);
-  m_spring_shader->set_uniform_value("l", 15.0f);
+  m_spring_shader->set_uniform_value("h0", 1.0f);
+  m_spring_shader->set_uniform_value("l", 10.0f);
   m_spring_shader->set_uniform_value("r", 0.2f);
-  m_spring_shader->set_uniform_value("rsmall", 0.1f);
-  m_spring_shader->set_uniform_value("count", 1000.0f);
+  m_spring_shader->set_uniform_value("rsmall", 0.05f);
+  m_spring_shader->set_uniform_value("count", 400.0f);
   m_spring_vertex_array->bind();
-  glDrawArrays(GL_LINE_STRIP, 0, 1000);
+  glDrawArrays(GL_LINE_STRIP, 0, 400);
   glCheckError();
   m_weight_shader->bind();
-  m_weight_shader->set_uniform_value("model", m_model_mat);
+  m_weight_shader->set_uniform_value("model", m_weight_model_mat);
   m_weight_shader->set_uniform_value("view", m_camera->get_view_matrix());
   m_weight_shader->set_uniform_value("projection", m_camera->get_projection_matrix());
   m_weight_vertex_array->bind();
-  glDrawElements(GL_TRIANGLES, m_weight_vertex_array->get_draw_size(), GL_UNSIGNED_INT, 0);
+  glDrawArrays(GL_TRIANGLES, 0, m_weight_vertex_array->get_draw_size());
   m_weight_vertex_array->unbind();
   m_weight_shader->unbind();
 }

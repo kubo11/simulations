@@ -1,10 +1,14 @@
 #version 460 core
 
-uniform mat4 model, view, projection;
+uniform mat4 model;
 uniform float h0, l, r, rsmall, count;
 
-out vec3 outNorm;
-out vec3 outTangent;
+out VS_OUT {
+  vec3 pos;
+  vec3 norm;
+  vec3 tangent;
+}
+vsOut;
 
 float dangle_ds(float l, float r, float h) { return sqrt(l * l - h * h) / r; }
 
@@ -23,7 +27,7 @@ void main() {
   vec3 curve_position = get_position(t, r, h, a);
   vec3 curve_normal = normalize(get_normal(t, r, h, a));
   vec3 curve_tangent = normalize(get_tangent(t, r, h, a));
-  gl_Position = projection * view * model * vec4(curve_position, 1.0);
-  outNorm = vec3(model * vec4(curve_normal, 0.0));
-  outTangent = vec3(model * vec4(curve_tangent, 0.0));
+  vsOut.pos = vec3(model * vec4(curve_position, 1.0));
+  vsOut.norm = normalize(vec3(model * vec4(curve_normal, 0.0)));
+  vsOut.tangent = normalize(vec3(model * vec4(curve_tangent, 0.0)));
 }

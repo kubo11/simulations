@@ -15,10 +15,10 @@
 
 struct WeightVertex {
   glm::vec3 position;
-  glm::vec3 color;
+  glm::vec3 normal;
 
-  WeightVertex() : position{0.0f, 0.0f, 0.0f}, color{0.0f, 0.0f, 0.0f} {}
-  WeightVertex(const glm::vec3& position, const glm::vec3& color) : position(position), color(color) {}
+  WeightVertex() : position{0.0f, 0.0f, 0.0f}, normal{0.0f, 0.0f, 0.0f} {}
+  WeightVertex(const glm::vec3& position, const glm::vec3& normal) : position(position), normal(normal) {}
 
   static std::vector<VertexAttribute> get_vertex_attributes() {
     return {{.size = 3, .type = GL_FLOAT}, {.size = 3, .type = GL_FLOAT}};
@@ -57,7 +57,8 @@ class SpringApp : public App {
   std::unique_ptr<ShaderProgram> m_weight_shader;
   std::unique_ptr<VertexArray<int>> m_spring_vertex_array;
   std::unique_ptr<VertexArray<WeightVertex>> m_weight_vertex_array;
-  glm::mat4 m_model_mat = glm::mat4(1.0f);
+  glm::mat4 m_weight_model_mat = glm::mat4(1.0f);
+  glm::mat4 m_spring_model_mat = glm::mat4(1.0f);
   std::unique_ptr<Camera> m_camera;
 
   void copy_ui_data();
