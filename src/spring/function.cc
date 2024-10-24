@@ -18,9 +18,9 @@ std::unique_ptr<Function> ConstFunction::copy() { return std::unique_ptr<Functio
 
 StepFunction::StepFunction(float A, float B, float c) : A(A), B(B), c(c) {}
 
-float StepFunction::operator()(float t) const { return (t > c) ? A : B; }
+float StepFunction::operator()(float t) const { return (t < c) ? A : B; }
 
-std::string StepFunction::to_string() const { return "(t > c) ? A : B"; }
+std::string StepFunction::to_string() const { return "(t < c) ? A : B"; }
 
 void StepFunction::show_ui() {
   ImGui::Text("A    ");
