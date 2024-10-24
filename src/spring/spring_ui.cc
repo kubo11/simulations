@@ -95,6 +95,9 @@ void SpringUI::draw() {
     show_trajectory_graph();
     show_visulaization();
   }
+  bool show = true;
+  ImGui::ShowDemoWindow(&show);
+  ImPlot::ShowDemoWindow(&show);
   ImGui::End();
 }
 
@@ -102,15 +105,16 @@ void SpringUI::show_property_panel() {
   ImGui::SetNextWindowPos(ImVec2(0, 0));
   ImGui::BeginChild("properties", ImVec2(0.2 * m_window.get_width(), m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
-  if (ImGui::Button("Start")) {
+  ImVec2 size = ImGui::GetContentRegionAvail();
+  if (ImGui::Button("Start", ImVec2(size.x / 3, 25))) {
     m_start_handler();
   }
   ImGui::SameLine();
-  if (ImGui::Button("Pause")) {
+  if (ImGui::Button("Pause", ImVec2(size.x / 3, 25))) {
     m_pause_handler();
   }
   ImGui::SameLine();
-  if (ImGui::Button("Restart")) {
+  if (ImGui::Button("Restart", ImVec2(size.x / 3, 25))) {
     m_restart_handler();
     clear();
   }
@@ -196,7 +200,8 @@ void SpringUI::show_pos_vel_acc_graph() {
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Position, velocity and acceleration", ImVec2(-1, -1))) {
+    if (ImPlot::BeginPlot("Position, velocity and acceleration", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_AutoFit);
       ImPlot::PlotLine("Position", m_time.data(), m_weight_position.data(), m_time.size());
       ImPlot::PlotLine("Velocity", m_time.data(), m_weight_velocity.data(), m_time.size());
       ImPlot::PlotLine("Acceleration", m_time.data(), m_weight_acceleration.data(), m_time.size());
@@ -212,7 +217,8 @@ void SpringUI::show_forces_graph() {
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Forces", ImVec2(-1, -1))) {
+    if (ImPlot::BeginPlot("Forces", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_AutoFit);
       ImPlot::PlotLine("f(t)", m_time.data(), m_elasticity_force.data(), m_time.size());
       ImPlot::PlotLine("g(t)", m_time.data(), m_damping_force.data(), m_time.size());
       ImPlot::PlotLine("h(t)", m_time.data(), m_field_force.data(), m_time.size());
@@ -229,7 +235,9 @@ void SpringUI::show_trajectory_graph() {
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Trajectory", ImVec2(-1, -1))) {
+    if (ImPlot::BeginPlot("Trajectory", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_AutoFit);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_AutoFit);
       ImPlot::PlotLine("", m_weight_position.data(), m_weight_velocity.data(), m_time.size());
     }
     ImPlot::EndPlot();

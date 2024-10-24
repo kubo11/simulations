@@ -113,7 +113,8 @@ void SpringApp::mouse_position_callback(GLFWwindow* window, double xpos, double 
   float curr_xpos = -1.0 + xpos / static_cast<float>(app->m_window->get_width()) * 2.0;
   float curr_ypos = 1.0 - ypos / static_cast<float>(app->m_window->get_height()) * 2.0;
 
-  if (glfwGetMouseButton(app->m_window->get_instance(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+  if (glfwGetKey(app->m_window->get_instance(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS &&
+   glfwGetMouseButton(app->m_window->get_instance(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
     app->m_camera->rotate(-glm::vec2(curr_xpos - prev_xpos, curr_ypos - prev_ypos), 0.01f);
   }
 
@@ -123,7 +124,9 @@ void SpringApp::mouse_position_callback(GLFWwindow* window, double xpos, double 
 
 void SpringApp::scroll_callback(GLFWwindow* window, double, double yoffset) {
   SpringApp* app = static_cast<SpringApp*>(glfwGetWindowUserPointer(window));
-  app->m_camera->zoom(-yoffset, 0.01f);
+  if (glfwGetKey(app->m_window->get_instance(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+    app->m_camera->zoom(-yoffset, 0.01f);
+  }
 }
 
 void SpringApp::simulation_loop() {
