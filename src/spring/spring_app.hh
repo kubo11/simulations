@@ -39,6 +39,7 @@ class SpringApp : public App {
   void start_simulatiton();
   void stop_simulation();
   void restart_simulation();
+  void skip_simulation();
 
  protected:
   virtual void update(float dt) override;
@@ -52,6 +53,8 @@ class SpringApp : public App {
   std::mutex m_simulation_mtx;
   bool m_run_simulation = false;
   float m_dt;
+  unsigned int m_simulation_frames_to_skip = 0;
+  float m_spring_height = 2.0f;
 
   std::unique_ptr<ShaderProgram> m_spring_shader;
   std::unique_ptr<ShaderProgram> m_weight_shader;

@@ -1,27 +1,28 @@
 #include "spring_ui.hh"
 
 SpringUI::SpringUI(const Window& window, const Framebuffer& framebuffer, std::function<void(void)> start_handler,
-                   std::function<void(void)> pause_handler, std::function<void(void)> restart_handler)
+                   std::function<void(void)> pause_handler, std::function<void(void)> restart_handler, std::function<void(void)> skip_handler)
     : m_window(window),
       m_framebuffer(framebuffer),
-      m_anchor_position_functions(),
+      m_rest_position_functions(),
       m_field_force_function(),
       m_start_handler(start_handler),
       m_pause_handler(pause_handler),
       m_restart_handler(restart_handler),
+      m_skip_handler(skip_handler),
       m_ui_mtx() {
-  m_anchor_position_functions.emplace_back(std::unique_ptr<Function>(new ConstFunction(1.0f)));
-  m_anchor_position_functions.emplace_back(std::unique_ptr<Function>(new StepFunction(1.0f, 0.0f, 0.0f)));
-  m_anchor_position_functions.emplace_back(std::unique_ptr<Function>(new SinStepFunction(1.0f, 1.0f, 0.0f)));
-  m_anchor_position_functions.emplace_back(std::unique_ptr<Function>(new SinFunction(1.0f, 1.0f, 0.0f)));
-  m_field_force_function.emplace_back(std::unique_ptr<Function>(new ConstFunction(1.0f)));
+  m_rest_position_functions.emplace_back(std::unique_ptr<Function>(new ConstFunction(0.0f)));
+  m_rest_position_functions.emplace_back(std::unique_ptr<Function>(new StepFunction(1.0f, 0.0f, 0.0f)));
+  m_rest_position_functions.emplace_back(std::unique_ptr<Function>(new SinStepFunction(1.0f, 1.0f, 0.0f)));
+  m_rest_position_functions.emplace_back(std::unique_ptr<Function>(new SinFunction(1.0f, 1.0f, 0.0f)));
+  m_field_force_function.emplace_back(std::unique_ptr<Function>(new ConstFunction(0.0f)));
   m_field_force_function.emplace_back(std::unique_ptr<Function>(new StepFunction(1.0f, 0.0f, 0.0f)));
   m_field_force_function.emplace_back(std::unique_ptr<Function>(new SinStepFunction(1.0f, 1.0f, 0.0f)));
   m_field_force_function.emplace_back(std::unique_ptr<Function>(new SinFunction(1.0f, 1.0f, 0.0f)));
 }
 
 void SpringUI::update_spring_data(float position, float velocity, float acceleration, float elasticity, float damping,
-                                  float field, float anchor_position, float time) {
+                                  float field, float rest_position, float time) {
   std::lock_guard<std::mutex> guard(m_ui_mtx);
   m_weight_position.push_back(position);
   m_weight_velocity.push_back(velocity);
@@ -29,7 +30,7 @@ void SpringUI::update_spring_data(float position, float velocity, float accelera
   m_elasticity_force.push_back(elasticity);
   m_damping_force.push_back(damping);
   m_field_force.push_back(field);
-  m_anchor_position.push_back(anchor_position);
+  m_rest_position.push_back(rest_position);
   m_time.push_back(time);
 }
 
@@ -41,7 +42,7 @@ void SpringUI::clear() {
   m_elasticity_force.clear();
   m_damping_force.clear();
   m_field_force.clear();
-  m_anchor_position.clear();
+  m_rest_position.clear();
   m_time.clear();
 }
 
@@ -75,9 +76,14 @@ float SpringUI::get_damping_coef() {
   return m_damping_coef;
 }
 
-std::unique_ptr<Function> SpringUI::get_anchor_position_function() {
+unsigned int SpringUI::get_frames_to_skip() {
   std::lock_guard<std::mutex> guard(m_ui_mtx);
-  return m_anchor_position_functions[m_selected_anchor_pos_func_idx]->copy();
+  return static_cast<unsigned int>(m_skip_frames);
+}
+
+std::unique_ptr<Function> SpringUI::get_rest_position_function() {
+  std::lock_guard<std::mutex> guard(m_ui_mtx);
+  return m_rest_position_functions[m_selected_rest_pos_func_idx]->copy();
 }
 
 std::unique_ptr<Function> SpringUI::get_field_force_function() {
@@ -105,26 +111,43 @@ void SpringUI::show_property_panel() {
   ImGui::SetNextWindowPos(ImVec2(0, 0));
   ImGui::BeginChild("properties", ImVec2(0.2 * m_window.get_width(), m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
-  ImVec2 size = ImGui::GetContentRegionAvail();
-  if (ImGui::Button("Start", ImVec2(size.x / 3, 25))) {
-    m_start_handler();
+  ImVec2 size = ImGui::GetItemRectSize();
+  size.x = (size.x - 2.0f * ImGui::GetStyle().ItemSpacing.x - 2.0f * ImGui::GetStyle().WindowPadding.x) / 3.0f;
+  ImGui::BeginGroup();
+  if (ImGui::Button("Start", size)) {
+    if (!m_time.empty()) { 
+      m_start_handler();
+    }
+    else {
+      m_restart_handler();
+    }
   }
   ImGui::SameLine();
-  if (ImGui::Button("Pause", ImVec2(size.x / 3, 25))) {
+  if (ImGui::Button("Pause", size)) {
     m_pause_handler();
   }
   ImGui::SameLine();
-  if (ImGui::Button("Restart", ImVec2(size.x / 3, 25))) {
+  if (ImGui::Button("Restart", size)) {
     m_restart_handler();
     clear();
   }
-  ImGui::Text("App information");
+  ImGui::EndGroup();
+
+  if (ImGui::Button("Skip", size)) {
+    m_skip_handler();
+  }
+  ImGui::SameLine();
+  ImGui::PushItemWidth(-1);
+  ImGui::DragInt("##skip_frames", &m_skip_frames, 1.0f, 1, 1e4);
+  ImGui::Separator();
+  
+  imgui_center_text("App information");
   ImGuiIO& io = ImGui::GetIO();
   ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    ImGui::Text("Simulation information");
+    imgui_center_text("Simulation information");
     ImGui::Text("Kinematics");
     ImGui::Text("x(t): %.3f", (!m_weight_position.empty()) ? m_weight_position.back() : 0.0f);
     ImGui::Text("v(t): %.3f", (!m_weight_velocity.empty()) ? m_weight_velocity.back() : 0.0f);
@@ -134,9 +157,9 @@ void SpringUI::show_property_panel() {
     ImGui::Text("g(t): %.3f", (!m_damping_force.empty()) ? m_damping_force.back() : 0.0f);
     ImGui::Text("h(t): %.3f", (!m_field_force.empty()) ? m_field_force.back() : 0.0f);
     ImGui::Text("Other");
-    ImGui::Text("w(t): %.3f", (!m_anchor_position.empty()) ? m_anchor_position.back() : 0.0f);
+    ImGui::Text("w(t): %.3f", (!m_rest_position.empty()) ? m_rest_position.back() : 0.0f);
 
-    ImGui::Text("Simulation properties");
+    imgui_center_text("Simulation properties");
     ImGui::Text("x0:  ");
     ImGui::SameLine();
     ImGui::DragFloat("##x0", &m_weight_starting_position, 0.05f, 0.0f, 10.0f);
@@ -158,20 +181,20 @@ void SpringUI::show_property_panel() {
 
     ImGui::Text("w(t):");
     ImGui::SameLine();
-    if (ImGui::BeginCombo("##anchor_func",
-                          m_anchor_position_functions[m_selected_anchor_pos_func_idx]->to_string().c_str(),
+    if (ImGui::BeginCombo("##rest_func",
+                          m_rest_position_functions[m_selected_rest_pos_func_idx]->to_string().c_str(),
                           ImGuiComboFlags_None)) {
-      for (int i = 0; i < m_anchor_position_functions.size(); ++i) {
-        const bool is_selected = (m_selected_anchor_pos_func_idx == i);
-        if (ImGui::Selectable(m_anchor_position_functions[i]->to_string().c_str(), is_selected)) {
-          m_selected_anchor_pos_func_idx = i;
+      for (int i = 0; i < m_rest_position_functions.size(); ++i) {
+        const bool is_selected = (m_selected_rest_pos_func_idx == i);
+        if (ImGui::Selectable(m_rest_position_functions[i]->to_string().c_str(), is_selected)) {
+          m_selected_rest_pos_func_idx = i;
         }
 
         if (is_selected) ImGui::SetItemDefaultFocus();
       }
       ImGui::EndCombo();
     }
-    m_anchor_position_functions[m_selected_anchor_pos_func_idx]->show_ui();
+    m_rest_position_functions[m_selected_rest_pos_func_idx]->show_ui();
 
     ImGui::Text("h(t):");
     ImGui::SameLine();
@@ -198,10 +221,12 @@ void SpringUI::show_pos_vel_acc_graph() {
   ImGui::SetNextWindowPos(ImVec2(0.2 * m_window.get_width(), 0.7 * m_window.get_height()));
   ImGui::BeginChild("pos_vel_acc_panel", ImVec2(0.5 * m_window.get_width(), 0.3 * m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+  static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
     if (ImPlot::BeginPlot("Position, velocity and acceleration", ImVec2(-1, -1), ImPlotFlags_Equal)) {
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_AutoFit);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit; 
       ImPlot::PlotLine("Position", m_time.data(), m_weight_position.data(), m_time.size());
       ImPlot::PlotLine("Velocity", m_time.data(), m_weight_velocity.data(), m_time.size());
       ImPlot::PlotLine("Acceleration", m_time.data(), m_weight_acceleration.data(), m_time.size());
@@ -215,14 +240,16 @@ void SpringUI::show_forces_graph() {
   ImGui::SetNextWindowPos(ImVec2(0.7 * m_window.get_width(), 0));
   ImGui::BeginChild("forces_panel", ImVec2(0.3 * m_window.get_width(), 0.5 * m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+  static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
     if (ImPlot::BeginPlot("Forces", ImVec2(-1, -1), ImPlotFlags_Equal)) {
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_AutoFit);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit;
       ImPlot::PlotLine("f(t)", m_time.data(), m_elasticity_force.data(), m_time.size());
       ImPlot::PlotLine("g(t)", m_time.data(), m_damping_force.data(), m_time.size());
       ImPlot::PlotLine("h(t)", m_time.data(), m_field_force.data(), m_time.size());
-      ImPlot::PlotLine("w(t)", m_time.data(), m_anchor_position.data(), m_time.size());
+      ImPlot::PlotLine("w(t)", m_time.data(), m_rest_position.data(), m_time.size());
     }
     ImPlot::EndPlot();
   }
@@ -233,11 +260,13 @@ void SpringUI::show_trajectory_graph() {
   ImGui::SetNextWindowPos(ImVec2(0.7 * m_window.get_width(), 0.5 * m_window.get_height()));
   ImGui::BeginChild("trajectory_panel", ImVec2(0.3 * m_window.get_width(), 0.5 * m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+  static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
     if (ImPlot::BeginPlot("Trajectory", ImVec2(-1, -1), ImPlotFlags_Equal)) {
-      ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_AutoFit);
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_AutoFit);
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit;
       ImPlot::PlotLine("", m_weight_position.data(), m_weight_velocity.data(), m_time.size());
     }
     ImPlot::EndPlot();

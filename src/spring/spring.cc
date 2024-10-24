@@ -1,34 +1,45 @@
 #include "spring.hh"
 
-Spring::Spring(float spring_rest_length, float mass, float elasticity, float damping, float position, float velocity,
-               std::unique_ptr<Function> anchor_position_function, std::unique_ptr<Function> field_force_function)
-    : spring_rest_length(spring_rest_length),
-      weight_mass(mass),
+Spring::Spring(float mass, float elasticity, float damping, float position, float velocity,
+               std::unique_ptr<Function> rest_position_function, std::unique_ptr<Function> field_force_function)
+    : weight_mass(mass),
       elasticity_coef(elasticity),
       damping_coef(damping),
-      anchor_position_function(std::move(anchor_position_function)),
+      rest_position_function(std::move(rest_position_function)),
       field_force_function(std::move(field_force_function)) {
   reset(position, velocity);
 }
 
 void Spring::update(float dt) {
-  m_anchor_position = (*anchor_position_function)(m_t + dt);
-  m_weight_position = m_weight_position + dt * m_weight_velocity;
+  float k1x = m_weight_velocity;
+  float k1v = (elasticity_coef * (*rest_position_function)(m_t) - elasticity_coef * m_weight_position - damping_coef * m_weight_velocity + (*field_force_function)(m_t)) / weight_mass;
 
-  m_field_force = (*field_force_function)(m_t + dt);
-  m_elasticity_force = elasticity_coef * (m_anchor_position - m_weight_position);
-  m_damping_force = -damping_coef * m_weight_velocity;
+  float k2x = m_weight_velocity + k1v * dt / 2.0;
+  float k2v = (elasticity_coef * (*rest_position_function)(m_t + dt / 2.0) - elasticity_coef * (m_weight_position + k1x * dt / 2.0) - damping_coef * (m_weight_velocity + k1v * dt / 2.0) + (*field_force_function)(m_t + dt / 2.0)) / weight_mass;
 
-  m_weight_velocity = m_weight_velocity + dt * (m_field_force + m_damping_force + m_elasticity_force) / weight_mass;
-  m_weight_acceleration = (m_field_force + m_damping_force + m_elasticity_force) / weight_mass;
+  float k3x = m_weight_velocity + k2v * dt / 2.0;
+  float k3v = (elasticity_coef * (*rest_position_function)(m_t + dt / 2.0) - elasticity_coef * (m_weight_position + k2x * dt / 2.0) - damping_coef * (m_weight_velocity + k2v * dt / 2.0) + (*field_force_function)(m_t + dt / 2.0)) / weight_mass;
+
+  float k4x = m_weight_velocity + k3v * dt;
+  float k4v = (elasticity_coef * (*rest_position_function)(m_t + dt) - elasticity_coef * (m_weight_position + k3x * dt) - damping_coef * (m_weight_velocity + k3v * dt) + (*field_force_function)(m_t + dt)) / weight_mass;
+
+  m_weight_position += dt / 6.0 * (k1x + 2.0 * k2x + 2.0 * k3x + k4x);
+  m_weight_velocity += dt / 6.0 * (k1v + 2.0 * k2v + 2.0 * k3v + k4v);
 
   m_t += dt;
+
+  m_rest_position = (*rest_position_function)(m_t);
+  m_field_force = (*field_force_function)(m_t);
+  m_elasticity_force = elasticity_coef * (m_rest_position - m_weight_position);
+  m_damping_force = -damping_coef * m_weight_velocity;
+
+  m_weight_acceleration = (m_elasticity_force + m_damping_force + m_field_force) / weight_mass;
 }
 
 void Spring::reset(float position, float velocity) {
   m_t = 0.0f;
   m_weight_position = position;
-  m_anchor_position = m_weight_position + spring_rest_length;
+  m_rest_position = (*rest_position_function)(m_t);
   m_weight_velocity = velocity;
   m_weight_acceleration = 0.0f;
   m_field_force = 0.0f;
@@ -38,7 +49,7 @@ void Spring::reset(float position, float velocity) {
 
 float Spring::get_t() const { return m_t; }
 
-float Spring::get_anchor_position() const { return m_anchor_position; }
+float Spring::get_rest_position() const { return m_rest_position; }
 
 float Spring::get_weight_position() const { return m_weight_position; }
 

@@ -37,14 +37,15 @@ SpringApp::SpringApp() : m_simulation_mtx() {
 
   m_ui = std::make_unique<SpringUI>(*m_window, *m_framebuffer, std::bind(&SpringApp::start_simulatiton, this),
                                     std::bind(&SpringApp::stop_simulation, this),
-                                    std::bind(&SpringApp::restart_simulation, this));
+                                    std::bind(&SpringApp::restart_simulation, this), std::bind(&SpringApp::skip_simulation, this));
   m_dt = m_ui->get_dt();
   m_spring =
-      std::make_unique<Spring>(6.0f, m_ui->get_weight_mass(), m_ui->get_elasticity_coef(), m_ui->get_damping_coef(),
+      std::make_unique<Spring>(m_ui->get_weight_mass(), m_ui->get_elasticity_coef(), m_ui->get_damping_coef(),
                                m_ui->get_weight_starting_position(), m_ui->get_weight_starting_velocity(),
-                               m_ui->get_anchor_position_function(), m_ui->get_field_force_function());
+                               m_ui->get_rest_position_function(), m_ui->get_field_force_function());
+  m_spring_model_mat = glm::scale(glm::translate(m_weight_model_mat, glm::vec3(0.0f, 2.5f, 0.0f)), glm::vec3(1.0f, -1.0f, 1.0f));
 
-  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 4.0f, 1.6f, 8.0f, 45.0f,
+  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 8.0f, 1.6f, 16.0f, 45.0f,
                                       m_window->get_aspect_ratio(), 0.5f, 500.0f);
   m_spring_vertex_array = std::make_unique<VertexArray<int>>();
   m_spring_shader = std::move(ShaderProgram::load("src/spring/shaders/spring"));
@@ -136,12 +137,16 @@ void SpringApp::simulation_loop() {
     m_ui->update_spring_data(m_spring->get_weight_position(), m_spring->get_weight_velocity(),
                              m_spring->get_weight_acceleration(), m_spring->get_elasticity_force(),
                              m_spring->get_damping_force(), m_spring->get_field_force(),
-                             m_spring->get_anchor_position(), m_spring->get_t());
+                             m_spring->get_rest_position(), m_spring->get_t());
     m_weight_model_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, m_spring->get_weight_position(), 0.0f));
-    m_spring_model_mat = glm::translate(m_weight_model_mat, glm::vec3(0.0f, 0.5f, 0.0f));
+    m_spring_height = 2.0f - m_spring->get_weight_position();
     {
       std::lock_guard<std::mutex> guard(m_simulation_mtx);
       if (!m_run_simulation) return;
+      if (m_simulation_frames_to_skip > 0) {
+        --m_simulation_frames_to_skip;
+        continue;
+      }
     }
     auto end = std::chrono::high_resolution_clock::now();
     float loop_runtime = std::chrono::duration<float, std::chrono::seconds::period>(beg - end).count();
@@ -170,9 +175,17 @@ void SpringApp::stop_simulation() {
 }
 
 void SpringApp::restart_simulation() {
+  m_spring_height = 2.0f;
   stop_simulation();
   copy_ui_data();
   start_simulatiton();
+}
+
+void SpringApp::skip_simulation() {
+  {
+    std::lock_guard<std::mutex> guard(m_simulation_mtx);
+    m_simulation_frames_to_skip = m_ui->get_frames_to_skip();
+  } 
 }
 
 void SpringApp::copy_ui_data() {
@@ -180,7 +193,7 @@ void SpringApp::copy_ui_data() {
   m_spring->weight_mass = m_ui->get_weight_mass();
   m_spring->damping_coef = m_ui->get_damping_coef();
   m_spring->elasticity_coef = m_ui->get_elasticity_coef();
-  m_spring->anchor_position_function = std::move(m_ui->get_anchor_position_function());
+  m_spring->rest_position_function = std::move(m_ui->get_rest_position_function());
   m_spring->field_force_function = std::move(m_ui->get_field_force_function());
   m_spring->reset(m_ui->get_weight_starting_position(), m_ui->get_weight_starting_velocity());
 }
@@ -190,7 +203,7 @@ void SpringApp::render_visualization() {
   m_spring_shader->set_uniform_value("model", m_spring_model_mat);
   m_spring_shader->set_uniform_value("view", m_camera->get_view_matrix());
   m_spring_shader->set_uniform_value("projection", m_camera->get_projection_matrix());
-  m_spring_shader->set_uniform_value("h0", 1.0f);
+  m_spring_shader->set_uniform_value("h0", m_spring_height);
   m_spring_shader->set_uniform_value("l", 10.0f);
   m_spring_shader->set_uniform_value("r", 0.2f);
   m_spring_shader->set_uniform_value("rsmall", 0.05f);
