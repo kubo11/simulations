@@ -11,12 +11,11 @@ target_precompile_headers(${SIMULATION_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src/c
 
 target_link_libraries(${SIMULATION_NAME} PRIVATE glad glfw glm imgui)
 
+set(BIN_NAME ${SIMULATION_NAME})
+set(BIN_PATH ${CMAKE_CURRENT_BINARY_DIR})
+
 if (WIN32)
-    set(BIN_NAME ${SIMULATION_NAME}.exe)
-    set(BIN_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-else ()
-    set(BIN_NAME ${SIMULATION_NAME})
-    set(BIN_PATH ${CMAKE_CURRENT_BINARY_DIR})
+        set(BIN_NAME ${BIN_NAME}.exe)
 endif ()
 
 add_custom_target(copy_binary ALL
