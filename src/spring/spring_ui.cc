@@ -101,9 +101,6 @@ void SpringUI::draw() {
     show_trajectory_graph();
     show_visulaization();
   }
-  bool show = true;
-  ImGui::ShowDemoWindow(&show);
-  ImPlot::ShowDemoWindow(&show);
   ImGui::End();
 }
 

@@ -45,7 +45,7 @@ SpringApp::SpringApp() : m_simulation_mtx() {
                                m_ui->get_rest_position_function(), m_ui->get_field_force_function());
   m_spring_model_mat = glm::scale(glm::translate(m_weight_model_mat, glm::vec3(0.0f, 2.5f, 0.0f)), glm::vec3(1.0f, -1.0f, 1.0f));
 
-  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 8.0f, 1.6f, 16.0f, 45.0f,
+  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 8.0f, 1.6f, 64.0f, 45.0f,
                                       m_window->get_aspect_ratio(), 0.5f, 500.0f);
   m_spring_vertex_array = std::make_unique<VertexArray<int>>();
   m_spring_shader = std::move(ShaderProgram::load("src/spring/shaders/spring"));
