@@ -17,8 +17,8 @@ void Uniform::commit() {
 }
 
 bool Uniform::type_error(const char* name) {
-  std::cout << std::format("Attempted to set shader uniform with wrong type ({}, instead of {}): {}", name,
-                           get_type_name(), get_name())
-            << std::endl;
+  // std::cout << std::format("Attempted to set shader uniform with wrong type ({}, instead of {}): {}", name,
+  //                          get_type_name(), get_name())
+  //           << std::endl;
   return false;
 }

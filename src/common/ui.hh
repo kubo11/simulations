@@ -3,9 +3,12 @@
 
 #include "pch.hh"
 
+#include "window.hh"
+
 class UI {
  public:
-  UI() = default;
+  UI(Window& window);
+  virtual ~UI();
 
   void update();
 

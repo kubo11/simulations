@@ -2,7 +2,7 @@
 #define SIMULATIONS_COMMON_UTILS
 
 #include <glad/gl.h>
-#include <format>
+// #include <format>
 #include <iostream>
 #include <string>
 
@@ -37,7 +37,7 @@ inline void glCheckError_(const char* file, int line) {
         error = "INVALID_FRAMEBUFFER_OPERATION";
         break;
     }
-    std::cout << std::format("{} | {} ({})", error, file, line) << std::endl;
+    // std::cout << std::format("{} | {} ({})", error, file, line) << std::endl;
   }
   if (errorCode != GL_NO_ERROR) throw std::runtime_error("OpenGL error");
 }

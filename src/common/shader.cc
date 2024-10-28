@@ -47,7 +47,7 @@ bool Shader::check_shader_compile_erros(unsigned int shader_id) {
   glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
   if (!success) {
     glGetShaderInfoLog(shader_id, sizeof(log_buffer), NULL, log_buffer);
-    std::cout << std::format("Shader compilation error \n{}", log_buffer) << std::endl;
+    // std::cout << std::format("Shader compilation error \n{}", log_buffer) << std::endl;
   }
   return success;
 }

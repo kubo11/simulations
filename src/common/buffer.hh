@@ -48,8 +48,8 @@ class Buffer {
     copy(data.size() * sizeof(T), data.data());
     glCheckError();
   }
-  void copy_subregion(unsigned int offset, unsigned int size, T* data) {
-    glBufferSubData(buffer_type_to_gl(m_type), m_id, offset, size, data);
+  void copy_subregion(unsigned int offset, unsigned int size, const T* data) {
+    glBufferSubData(buffer_type_to_gl(m_type), offset, size, data);
     glCheckError();
   }
   void copy_subregion(unsigned int offset, const std::vector<T>& data) {

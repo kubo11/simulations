@@ -1,5 +1,5 @@
-#ifndef SIMULATIONS_SPRING_FUNCTION
-#define SIMULATIONS_SPRING_FUNCTION
+#ifndef SIMULATIONS_COMMON_FUNCTION
+#define SIMULATIONS_COMMON_FUNCTION
 
 #include "pch.hh"
 
@@ -9,7 +9,7 @@ class Function {
 
   virtual float operator()(float t) const = 0;
   virtual std::string to_string() const = 0;
-  virtual void show_ui() = 0;
+  virtual bool show_ui() = 0;
   virtual std::unique_ptr<Function> copy() = 0;
 
  protected:
@@ -26,7 +26,7 @@ class ConstFunction : public Function {
 
   virtual float operator()(float t) const override;
   virtual std::string to_string() const override;
-  virtual void show_ui() override;
+  virtual bool show_ui() override;
   virtual std::unique_ptr<Function> copy() override;
 };
 
@@ -40,7 +40,7 @@ class StepFunction : public Function {
 
   virtual float operator()(float t) const override;
   virtual std::string to_string() const override;
-  virtual void show_ui() override;
+  virtual bool show_ui() override;
   virtual std::unique_ptr<Function> copy() override;
 };
 
@@ -54,7 +54,7 @@ class SinStepFunction : public Function {
 
   virtual float operator()(float t) const override;
   virtual std::string to_string() const override;
-  virtual void show_ui() override;
+  virtual bool show_ui() override;
   virtual std::unique_ptr<Function> copy() override;
 };
 
@@ -68,8 +68,8 @@ class SinFunction : public Function {
 
   virtual float operator()(float t) const override;
   virtual std::string to_string() const override;
-  virtual void show_ui() override;
+  virtual bool show_ui() override;
   virtual std::unique_ptr<Function> copy() override;
 };
 
-#endif  // SIMULATIONS_SPRING_FUNCTION
+#endif  // SIMULATIONS_COMMON_FUNCTION

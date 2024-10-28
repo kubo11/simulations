@@ -6,25 +6,18 @@
 #include "pch.hh"
 #include "ui.hh"
 #include "window.hh"
+#include "spring.hh"
 
 class SpringUI : public UI {
  public:
-  SpringUI(const Window& window, const Framebuffer& framebuffer, std::function<void(void)> start_handler,
-           std::function<void(void)> pause_handler, std::function<void(void)> restart_handler, std::function<void(void)> skip_handler);
+  SpringUI(Window& window, const Framebuffer& framebuffer, Spring& spring, std::function<void(void)> start_handler,
+           std::function<void(void)> stop_handler, std::function<void(void)> restart_handler, std::function<void(void)> skip_handler);
 
-  float get_weight_starting_position();
-  float get_weight_starting_velocity();
+  void update_spring_data();
+  void update_spring_parameters();
+
   float get_dt();
-  float get_weight_mass();
-  float get_elasticity_coef();
-  float get_damping_coef();
-  unsigned int get_frames_to_skip();
-  std::unique_ptr<Function> get_rest_position_function();
-  std::unique_ptr<Function> get_field_force_function();
-
-  void update_spring_data(float position, float velocity, float acceleration, float elasticity, float damping,
-                          float field, float rest_position, float time);
-  void clear();
+  unsigned int get_skip_frames_count();
 
  protected:
   virtual void draw() override;
@@ -56,10 +49,19 @@ class SpringUI : public UI {
   const Window& m_window;
   const Framebuffer& m_framebuffer;
 
+  Spring& m_spring;
+
   const std::function<void(void)> m_start_handler;
-  const std::function<void(void)> m_pause_handler;
-  const std::function<void(void)> m_restart_handler;
+  const std::function<void(void)> m_stop_handler;
+  const std::function<void(void)> m_apply_handler;
   const std::function<void(void)> m_skip_handler;
+
+  bool m_start_button_enabled = false;
+  bool m_stop_button_enabled = false;
+  bool m_apply_button_enabled = false;
+  bool m_skip_button_enabled = false;
+
+  void clear();
 
   void show_property_panel();
   void show_pos_vel_acc_graph();

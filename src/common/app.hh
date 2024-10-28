@@ -3,15 +3,25 @@
 
 #include "pch.hh"
 
+#include "window.hh"
+#include "camera.hh"
+
 class App {
  public:
-  App();
+  App(const std::string& name);
   virtual ~App() = default;
 
   void run();
 
+  static void close_callback(GLFWwindow* window);
+  static void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
+  static void mouse_position_callback(GLFWwindow* window, double xpos, double ypos);
+  static void scroll_callback(GLFWwindow* window, double, double yoffset);
+
  protected:
   bool m_run = true;
+  std::unique_ptr<Window> m_window;
+  std::unique_ptr<Camera> m_camera;
 
   virtual void update(float dt) = 0;
 

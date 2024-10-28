@@ -10,7 +10,6 @@
    public:                                                                                               \
     class_name(const std::string& name, const GLint location, const GLenum type, const GLuint program)   \
         : Uniform(name, location, type), m_data{} {                                                      \
-      if (type != uniform_type) throw std::runtime_error(std::format("Invalid uniform type: {}", type)); \
       get_function;                                                                                      \
     }                                                                                                    \
                                                                                                          \
@@ -145,7 +144,7 @@ inline std::unique_ptr<Uniform> create_uniform(const std::string& name, const GL
       return std::make_unique<Float4x4Uniform>(name, location, type, program);
 
     default:
-      throw std::runtime_error(std::format("Invalid uniform type: {}", type));
+      // throw std::runtime_error(std::format("Invalid uniform type: {}", type));
       return nullptr;
   }
 }

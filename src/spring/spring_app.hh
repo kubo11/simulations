@@ -12,6 +12,7 @@
 #include "spring_ui.hh"
 #include "vertex_array.hh"
 #include "window.hh"
+#include "spring_simulation.hh"
 
 struct WeightVertex {
   glm::vec3 position;
@@ -28,32 +29,18 @@ struct WeightVertex {
 class SpringApp : public App {
  public:
   SpringApp();
-  ~SpringApp();
+  virtual ~SpringApp() override;
 
-  static void close_callback(GLFWwindow* window);
   static void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
-  static void mouse_position_callback(GLFWwindow* window, double xpos, double ypos);
-  static void scroll_callback(GLFWwindow* window, double, double yoffset);
-
-  void simulation_loop();
-  void start_simulatiton();
-  void stop_simulation();
-  void restart_simulation();
-  void skip_simulation();
 
  protected:
   virtual void update(float dt) override;
 
  private:
-  std::unique_ptr<Window> m_window;
   std::unique_ptr<Framebuffer> m_framebuffer;
-  std::unique_ptr<Spring> m_spring;
+  std::unique_ptr<SpringSimulation> m_spring_simulation;
   std::unique_ptr<SpringUI> m_ui;
-  std::thread m_simulation_thread;
-  std::mutex m_simulation_mtx;
-  bool m_run_simulation = false;
-  float m_dt;
-  unsigned int m_simulation_frames_to_skip = 0;
+  std::unique_ptr<Spring> m_spring;
   float m_spring_height = 2.0f;
 
   std::unique_ptr<ShaderProgram> m_spring_shader;
@@ -62,9 +49,7 @@ class SpringApp : public App {
   std::unique_ptr<VertexArray<WeightVertex>> m_weight_vertex_array;
   glm::mat4 m_weight_model_mat = glm::mat4(1.0f);
   glm::mat4 m_spring_model_mat = glm::mat4(1.0f);
-  std::unique_ptr<Camera> m_camera;
 
-  void copy_ui_data();
   void render_visualization();
 };
 

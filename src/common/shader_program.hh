@@ -34,7 +34,7 @@ class ShaderProgram {
   template <typename T>
   void set_uniform_value(const std::string &name, const T &value) {
     if (!m_uniforms.contains(name)) {
-      throw std::runtime_error(std::format("Uniform {} doesn't exist", name.c_str()));
+      // throw std::runtime_error(std::format("Uniform {} doesn't exist", name.c_str()));
       return;
     }
 
@@ -44,7 +44,7 @@ class ShaderProgram {
   template <typename T>
   void set_and_commit_uniform_value(const std::string &name, const T &value) {
     if (!m_uniforms.contains(name)) {
-      throw std::runtime_error(std::format("Uniform {} doesn't exist", name.c_str()));
+      // throw std::runtime_error(std::format("Uniform {} doesn't exist", name.c_str()));
       return;
     }
 
