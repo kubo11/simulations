@@ -5,32 +5,32 @@
 
 #include "uniform.hh"
 
-#define DECLARE_UNIFORM_TYPE(class_name, data_type, get_function, set_function, uniform_type)            \
-  class class_name : public Uniform {                                                                    \
-   public:                                                                                               \
-    class_name(const std::string& name, const GLint location, const GLenum type, const GLuint program)   \
-        : Uniform(name, location, type), m_data{} {                                                      \
-      get_function;                                                                                      \
-    }                                                                                                    \
-                                                                                                         \
-   protected:                                                                                            \
-    virtual void commit_data() override {                                                                \
-      set_function;                                                                                      \
-      glCheckError();                                                                                    \
-    }                                                                                                    \
-                                                                                                         \
-    virtual bool set_data(const data_type& value) override {                                             \
-      if (m_data != value) {                                                                             \
-        m_data = value;                                                                                  \
-        return true;                                                                                     \
-      }                                                                                                  \
-      return false;                                                                                      \
-    }                                                                                                    \
-                                                                                                         \
-    virtual const char* get_type_name() const override { return #data_type; }                            \
-                                                                                                         \
-   private:                                                                                              \
-    data_type m_data;                                                                                    \
+#define DECLARE_UNIFORM_TYPE(class_name, data_type, get_function, set_function, uniform_type)          \
+  class class_name : public Uniform {                                                                  \
+   public:                                                                                             \
+    class_name(const std::string& name, const GLint location, const GLenum type, const GLuint program) \
+        : Uniform(name, location, type), m_data{} {                                                    \
+      get_function;                                                                                    \
+    }                                                                                                  \
+                                                                                                       \
+   protected:                                                                                          \
+    virtual void commit_data() override {                                                              \
+      set_function;                                                                                    \
+      glCheckError();                                                                                  \
+    }                                                                                                  \
+                                                                                                       \
+    virtual bool set_data(const data_type& value) override {                                           \
+      if (m_data != value) {                                                                           \
+        m_data = value;                                                                                \
+        return true;                                                                                   \
+      }                                                                                                \
+      return false;                                                                                    \
+    }                                                                                                  \
+                                                                                                       \
+    virtual const char* get_type_name() const override { return #data_type; }                          \
+                                                                                                       \
+   private:                                                                                            \
+    data_type m_data;                                                                                  \
   };
 
 #define DECLARE_UNIFORM_TYPE_SCALAR(class_name, data_type, get_function_name, set_function_name, uniform_type) \

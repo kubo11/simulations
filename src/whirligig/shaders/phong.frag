@@ -34,6 +34,6 @@ void main() {
     specular = pow(max(dot(H, N), 0.0), shininess);
   }
   vec3 outColor = ambientColor + color.rgb * diffuse * lightColor * lightIntensity / distance +
-               specularColor * specular * lightColor * lightIntensity / distance;
+                  specularColor * specular * lightColor * lightIntensity / distance;
   FragColor = vec4(outColor, color.a);
 }

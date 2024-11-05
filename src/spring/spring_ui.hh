@@ -4,14 +4,15 @@
 #include "framebuffer.hh"
 #include "function.hh"
 #include "pch.hh"
+#include "spring.hh"
 #include "ui.hh"
 #include "window.hh"
-#include "spring.hh"
 
 class SpringUI : public UI {
  public:
   SpringUI(Window& window, const Framebuffer& framebuffer, Spring& spring, std::function<void(void)> start_handler,
-           std::function<void(void)> stop_handler, std::function<void(void)> restart_handler, std::function<void(void)> skip_handler);
+           std::function<void(void)> stop_handler, std::function<void(void)> restart_handler,
+           std::function<void(void)> skip_handler);
 
   void update_spring_data();
   void update_spring_parameters();

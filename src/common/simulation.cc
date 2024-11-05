@@ -1,10 +1,9 @@
 #include "simulation.hh"
 
-Simulation::Simulation(float dt, std::function<void(void)> callback) : m_dt(dt), m_update_callback(callback), m_simulation_thread(), m_simulation_mtx() {}
+Simulation::Simulation(float dt, std::function<void(void)> callback)
+    : m_dt(dt), m_update_callback(callback), m_simulation_thread(), m_simulation_mtx() {}
 
-Simulation::~Simulation() {
-  stop();
-}
+Simulation::~Simulation() { stop(); }
 
 void Simulation::start() {
   {

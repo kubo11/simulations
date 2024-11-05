@@ -10,8 +10,8 @@
 #include "shader_program.hh"
 #include "vertex_array.hh"
 #include "whirligig.hh"
-#include "whirligig_ui.hh"
 #include "whirligig_simulation.hh"
+#include "whirligig_ui.hh"
 #include "window.hh"
 
 struct Vertex {
@@ -20,9 +20,7 @@ struct Vertex {
   Vertex() : position{0.0f, 0.0f, 0.0f} {}
   Vertex(const glm::vec3& position) : position(position) {}
 
-  static std::vector<VertexAttribute> get_vertex_attributes() {
-    return {{.size = 3, .type = GL_FLOAT}};
-  }
+  static std::vector<VertexAttribute> get_vertex_attributes() { return {{.size = 3, .type = GL_FLOAT}}; }
 };
 
 struct NormalVertex {

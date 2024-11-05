@@ -7,13 +7,14 @@
 #include "whirligig.hh"
 
 class WhirligigSimulation : public Simulation {
-public:
+ public:
   WhirligigSimulation(float dt, std::function<void(void)> callback, Whirligig& whirligig);
   virtual ~WhirligigSimulation() override = default;
 
   virtual void loop() override;
-private:
+
+ private:
   Whirligig& m_whirligig;
 };
 
-#endif // SIMULATIONS_WHIRLIGIG_SIMULATION
+#endif  // SIMULATIONS_WHIRLIGIG_SIMULATION

@@ -67,11 +67,11 @@ inline size_t glSizeofType(GLenum type) {
 }
 
 inline void imgui_center_text(const std::string& text) {
-    auto width = ImGui::GetContentRegionAvail().x;
-    auto text_width = ImGui::CalcTextSize(text.c_str()).x;
+  auto width = ImGui::GetContentRegionAvail().x;
+  auto text_width = ImGui::CalcTextSize(text.c_str()).x;
 
-    ImGui::SetCursorPosX((width - text_width) * 0.5f);
-    ImGui::Text(text.c_str());
+  ImGui::SetCursorPosX((width - text_width) * 0.5f);
+  ImGui::Text(text.c_str());
 }
 
 #endif  // SIMULATIONS_COMMON_UTILS

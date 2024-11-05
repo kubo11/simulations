@@ -1,6 +1,8 @@
 #include "whirligig.hh"
 
-Whirligig::Whirligig(glm::quat starting_orientation, float starting_angular_velocity, float cube_size, float cube_density, std::unique_ptr<Function> gravity_function) : m_cube_size(cube_size), m_cube_density(cube_density), m_gravity_function(std::move(gravity_function)) {
+Whirligig::Whirligig(glm::quat starting_orientation, float starting_angular_velocity, float cube_size,
+                     float cube_density, std::unique_ptr<Function> gravity_function)
+    : m_cube_size(cube_size), m_cube_density(cube_density), m_gravity_function(std::move(gravity_function)) {
   reset(starting_orientation, starting_angular_velocity);
 }
 

@@ -4,8 +4,8 @@
 #include "framebuffer.hh"
 #include "pch.hh"
 #include "ui.hh"
-#include "window.hh"
 #include "whirligig.hh"
+#include "window.hh"
 
 class WhirligigUI : public UI {
  public:

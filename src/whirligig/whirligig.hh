@@ -7,7 +7,8 @@
 
 class Whirligig {
  public:
-  Whirligig(glm::quat starting_orientation, float starting_angular_velocity, float cube_size, float cube_density, std::unique_ptr<Function> gravity_function);
+  Whirligig(glm::quat starting_orientation, float starting_angular_velocity, float cube_size, float cube_density,
+            std::unique_ptr<Function> gravity_function);
 
   void update(float dt);
   void reset(glm::quat starting_orientation, float starting_angular_velocity);

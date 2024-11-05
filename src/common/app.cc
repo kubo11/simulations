@@ -1,8 +1,7 @@
 #include "app.hh"
 
 App::App(const std::string& name) : m_reference_time(std::chrono::high_resolution_clock::now()) {
-  m_window =
-      std::make_unique<Window>(name, 1280u, 720u, glm::vec3(100.0f / 256.f, 100.0f / 256.0f, 100.0f / 256.0f));
+  m_window = std::make_unique<Window>(name, 1280u, 720u, glm::vec3(100.0f / 256.f, 100.0f / 256.0f, 100.0f / 256.0f));
 
   glfwSetWindowUserPointer(m_window->get_instance(), this);
 
@@ -53,7 +52,7 @@ void App::mouse_position_callback(GLFWwindow* window, double xpos, double ypos) 
   float curr_ypos = 1.0 - ypos / static_cast<float>(app->m_window->get_height()) * 2.0;
 
   if (glfwGetKey(app->m_window->get_instance(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS &&
-   glfwGetMouseButton(app->m_window->get_instance(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+      glfwGetMouseButton(app->m_window->get_instance(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
     app->m_camera->rotate(-glm::vec2(curr_xpos - prev_xpos, curr_ypos - prev_ypos), 0.01f);
   }
 

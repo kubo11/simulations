@@ -3,8 +3,8 @@
 
 #include "pch.hh"
 
-#include "window.hh"
 #include "camera.hh"
+#include "window.hh"
 
 class App {
  public:

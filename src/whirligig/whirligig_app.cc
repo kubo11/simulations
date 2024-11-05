@@ -5,46 +5,50 @@ WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx{} {
 
   m_camera->rotate(glm::vec2(0.0f, 4.0f), 1e-3f);
 
-  m_whirligig = std::make_unique<Whirligig>(glm::quat(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, 0.0f, 0.0f, std::move(std::make_unique<ConstFunction>(0)));
+  m_whirligig = std::make_unique<Whirligig>(glm::quat(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, 0.0f, 0.0f,
+                                            std::move(std::make_unique<ConstFunction>(0)));
 
-  m_ui = std::make_unique<WhirligigUI>(*m_window, *m_whirligig, [this](){ m_simulation->start(); },
-                                    [this](){ m_simulation->stop(); },
-                                    [this](){ 
-                                              m_ui->update_whirligig_parameters();
-                                              m_simulation->set_dt(m_ui->get_dt());
-                                              m_trajectory_length = m_ui->get_trajectory_length();
-                                              m_trajectory_vertices.resize(m_trajectory_length, Vertex{{0.0f, 0.0f, 0.0f}});
-                                            },
-                                    [this](){ m_simulation->add_skip_frames(m_ui->get_skip_frames_count()); });
+  m_ui = std::make_unique<WhirligigUI>(
+      *m_window, *m_whirligig, [this]() { m_simulation->start(); }, [this]() { m_simulation->stop(); },
+      [this]() {
+        m_ui->update_whirligig_parameters();
+        m_simulation->set_dt(m_ui->get_dt());
+        m_trajectory_length = m_ui->get_trajectory_length();
+        m_trajectory_vertices.resize(m_trajectory_length, Vertex{{0.0f, 0.0f, 0.0f}});
+      },
+      [this]() { m_simulation->add_skip_frames(m_ui->get_skip_frames_count()); });
 
-  m_simulation = std::make_unique<WhirligigSimulation>(m_ui->get_dt(), [this](){ 
-                                                                                  m_ui->update_whirligig_data(); 
-                                                                                  this->update_visualization_data();
-                                                                                }, *m_whirligig);
+  m_simulation = std::make_unique<WhirligigSimulation>(
+      m_ui->get_dt(),
+      [this]() {
+        m_ui->update_whirligig_data();
+        this->update_visualization_data();
+      },
+      *m_whirligig);
 
   m_ui->reset_whirligig_parameters();
   m_ui->update_whirligig_data();
   m_trajectory_length = m_ui->get_trajectory_length();
 
   auto cube_vertices = std::vector<NormalVertex>{
-      {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},   {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-      {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},     {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-      {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},    {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-      {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},    {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-      {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},    {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-      {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},     {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
-      {{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},  {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
-      {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},  {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
-      {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},   {{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
+      {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  {{1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+      {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+      {{0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+      {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},  {{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+      {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},  {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+      {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},  {{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f}},
+      {{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}}, {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
+      {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}}, {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
+      {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, -1.0f}}, {{1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}},
       {{0.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}},
-      {{0.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}},   {{0.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}},
-      {{0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}},  {{0.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}},
-      {{0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
-      {{1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},    {{1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-      {{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},   {{0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
+      {{0.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}}, {{0.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}},
+      {{0.0f, 1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}},
+      {{0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},  {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
+      {{1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},  {{1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+      {{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},  {{0.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
       {{0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}}, {{1.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}},
-      {{1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},   {{1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
-      {{0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},  {{0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}},
+      {{1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}}, {{1.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}},
+      {{0.0f, 0.0f, 1.0f}, {0.0f, -1.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f}, {0.0f, -1.0f, 0.0f}},
   };
   auto cube_vertex_buffer = std::make_unique<Buffer<NormalVertex>>();
   cube_vertex_buffer->bind();
@@ -53,21 +57,18 @@ WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx{} {
   m_cube_vertex_array =
       std::make_unique<VertexArray<NormalVertex>>(std::move(cube_vertex_buffer), NormalVertex::get_vertex_attributes());
 
-  auto plane_vertices = std::vector<NormalVertex>{
-    {{-1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}, {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
-    {{1.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, {{1.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
-    {{-1.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, {{-1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}
-  };
+  auto plane_vertices =
+      std::vector<NormalVertex>{{{-1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},  {{1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
+                                {{1.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},  {{1.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}},
+                                {{-1.0f, 0.0f, -1.0f}, {0.0f, 1.0f, 0.0f}}, {{-1.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 0.0f}}};
   auto plane_vertex_buffer = std::make_unique<Buffer<NormalVertex>>();
   plane_vertex_buffer->bind();
   plane_vertex_buffer->copy(plane_vertices);
   plane_vertex_buffer->unbind();
-  m_plane_vertex_array =
-      std::make_unique<VertexArray<NormalVertex>>(std::move(plane_vertex_buffer), NormalVertex::get_vertex_attributes());
+  m_plane_vertex_array = std::make_unique<VertexArray<NormalVertex>>(std::move(plane_vertex_buffer),
+                                                                     NormalVertex::get_vertex_attributes());
 
-  auto diagonal_vertices = std::vector<Vertex>{
-    {{0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}}
-  };
+  auto diagonal_vertices = std::vector<Vertex>{{{0.0f, 0.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}}};
   auto diagonal_vertex_buffer = std::make_unique<Buffer<Vertex>>();
   diagonal_vertex_buffer->bind();
   diagonal_vertex_buffer->copy(diagonal_vertices);
@@ -75,9 +76,9 @@ WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx{} {
   m_diagonal_vertex_array =
       std::make_unique<VertexArray<Vertex>>(std::move(diagonal_vertex_buffer), Vertex::get_vertex_attributes());
 
-  auto gravity_vector_vertices = std::vector<Vertex>{
-    {{0.0f, 0.0f, 0.0f}}, {{0.0f, -1.0f, 0.0f}}, {{0.0f, -1.0f, 0.0f}}, {{-0.1f, -0.9f, 0.0f}}, {{0.0f, -1.0f, 0.0f}}, {{0.1f, -0.9f, 0.0f}}
-  };
+  auto gravity_vector_vertices =
+      std::vector<Vertex>{{{0.0f, 0.0f, 0.0f}},   {{0.0f, -1.0f, 0.0f}}, {{0.0f, -1.0f, 0.0f}},
+                          {{-0.1f, -0.9f, 0.0f}}, {{0.0f, -1.0f, 0.0f}}, {{0.1f, -0.9f, 0.0f}}};
   auto gravity_vector_vertex_buffer = std::make_unique<Buffer<Vertex>>();
   gravity_vector_vertex_buffer->bind();
   gravity_vector_vertex_buffer->copy(gravity_vector_vertices);
@@ -99,9 +100,7 @@ WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx{} {
   update_visualization_data();
 }
 
-WhirligigApp::~WhirligigApp() {
-  m_simulation->stop();
-}
+WhirligigApp::~WhirligigApp() { m_simulation->stop(); }
 
 void WhirligigApp::update(float dt) {
   m_window->clear();
@@ -195,7 +194,8 @@ void WhirligigApp::update_visualization_data() {
   auto straight_up_matrix = glm::mat4(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.5f, 0.0f, -0.5f)));
   auto incline_matrix = glm::rotate(glm::radians(m_whirligig->get_starting_incline()), glm::vec3(0.0f, 0.0f, -1.0f));
   auto cube_scale = m_whirligig->get_cube_size();
-  m_cube_model_matrix = glm::mat4(m_whirligig->get_orientation()) * incline_matrix * straight_up_matrix * glm::scale(glm::mat4(1.0f), glm::vec3(cube_scale, cube_scale, cube_scale));
+  m_cube_model_matrix = glm::mat4(m_whirligig->get_orientation()) * incline_matrix * straight_up_matrix *
+                        glm::scale(glm::mat4(1.0f), glm::vec3(cube_scale, cube_scale, cube_scale));
   m_trajectory_vertices[m_trajectory_offset] = Vertex{m_whirligig->get_diagonal()};
   m_trajectory_offset = (m_trajectory_offset + 1) % m_trajectory_length;
 }

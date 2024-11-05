@@ -4,14 +4,20 @@ SpringApp::SpringApp() : App("Spring") {
   m_framebuffer = std::make_unique<Framebuffer>(m_window->get_width(), m_window->get_height());
   glfwSetFramebufferSizeCallback(m_window->get_instance(), SpringApp::framebuffer_resize_callback);
 
-  m_spring = std::make_unique<Spring>(0, 0, 0, 0, 0, std::move(std::make_unique<ConstFunction>(0)), std::move(std::make_unique<ConstFunction>(0)));
+  m_spring = std::make_unique<Spring>(0, 0, 0, 0, 0, std::move(std::make_unique<ConstFunction>(0)),
+                                      std::move(std::make_unique<ConstFunction>(0)));
 
-  m_ui = std::make_unique<SpringUI>(*m_window, *m_framebuffer, *m_spring, [this](){ m_spring_simulation->start(); },
-                                    [this](){ m_spring_simulation->stop(); },
-                                    [this](){ m_ui->update_spring_parameters(); m_spring_simulation->set_dt(m_ui->get_dt()); },
-                                    [this](){ m_spring_simulation->add_skip_frames(m_ui->get_skip_frames_count()); });
+  m_ui = std::make_unique<SpringUI>(
+      *m_window, *m_framebuffer, *m_spring, [this]() { m_spring_simulation->start(); },
+      [this]() { m_spring_simulation->stop(); },
+      [this]() {
+        m_ui->update_spring_parameters();
+        m_spring_simulation->set_dt(m_ui->get_dt());
+      },
+      [this]() { m_spring_simulation->add_skip_frames(m_ui->get_skip_frames_count()); });
 
-  m_spring_simulation = std::make_unique<SpringSimulation>(m_ui->get_dt(), [this](){ m_ui->update_spring_data(); }, *m_spring);
+  m_spring_simulation = std::make_unique<SpringSimulation>(
+      m_ui->get_dt(), [this]() { m_ui->update_spring_data(); }, *m_spring);
 
   m_spring_vertex_array = std::make_unique<VertexArray<int>>();
   m_spring_shader = std::move(ShaderProgram::load("src/spring/shaders/spring"));
@@ -44,9 +50,7 @@ SpringApp::SpringApp() : App("Spring") {
       std::make_unique<VertexArray<WeightVertex>>(std::move(vertex_buffer), WeightVertex::get_vertex_attributes());
 }
 
-SpringApp::~SpringApp() {
-  m_spring_simulation->stop();
-}
+SpringApp::~SpringApp() { m_spring_simulation->stop(); }
 
 void SpringApp::update(float dt) {
   m_window->clear();
@@ -60,9 +64,10 @@ void SpringApp::update(float dt) {
 
 void SpringApp::render_visualization() {
   m_weight_model_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, m_spring->get_weight_position(), 0.0f));
-  float anchor_pos_y = 2.5f+m_spring->get_rest_position();
+  float anchor_pos_y = 2.5f + m_spring->get_rest_position();
   m_spring_height = anchor_pos_y - m_spring->get_weight_position();
-  m_spring_model_mat = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f)), glm::vec3(0.0f, -anchor_pos_y, 0.0f));
+  m_spring_model_mat =
+      glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f)), glm::vec3(0.0f, -anchor_pos_y, 0.0f));
 
   m_spring_shader->bind();
   m_spring_shader->set_uniform_value("model", m_spring_model_mat);

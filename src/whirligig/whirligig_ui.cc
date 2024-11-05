@@ -1,8 +1,8 @@
 #include "whirligig_ui.hh"
 
 WhirligigUI::WhirligigUI(Window& window, Whirligig& whirligig, std::function<void(void)> start_handler,
-              std::function<void(void)> stop_handler, std::function<void(void)> apply_handler,
-              std::function<void(void)> skip_handler)
+                         std::function<void(void)> stop_handler, std::function<void(void)> apply_handler,
+                         std::function<void(void)> skip_handler)
     : UI(window),
       m_window(window),
       m_whirligig(whirligig),
@@ -71,10 +71,10 @@ void WhirligigUI::show_property_panel() {
   ImGui::BeginGroup();
   ImGui::BeginDisabled(!m_start_button_enabled);
   if (ImGui::Button("Start", size)) {
-      m_start_handler();
-      m_start_button_enabled = false;
-      m_stop_button_enabled = true;
-      m_skip_button_enabled = true;
+    m_start_handler();
+    m_start_button_enabled = false;
+    m_stop_button_enabled = true;
+    m_skip_button_enabled = true;
   }
   ImGui::EndDisabled();
   ImGui::SameLine();
@@ -108,14 +108,14 @@ void WhirligigUI::show_property_panel() {
   ImGui::PushItemWidth(-1);
   ImGui::DragInt("##skip_frames", &m_skip_frames, 1.0f, 1, 1e4);
   ImGui::Separator();
-  
+
   imgui_center_text("App information");
   ImGuiIO& io = ImGui::GetIO();
   ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-  
+
     imgui_center_text("Simulation information");
     auto orientation = glm::normalize(m_whirligig.get_diagonal());
     ImGui::Text("o(t): %.3f, %.3f, %.3f", m_orientation.x, m_orientation.y, m_orientation.z);
@@ -137,8 +137,7 @@ void WhirligigUI::show_property_panel() {
     if (ImGui::DragFloat("##dt", &m_dt)) m_apply_button_enabled = true;
     ImGui::Text("g(t):        ");
     ImGui::SameLine();
-    if (ImGui::BeginCombo("##gravity_func",
-                          m_gravity_function[m_selected_gravity_func_idx]->to_string().c_str(),
+    if (ImGui::BeginCombo("##gravity_func", m_gravity_function[m_selected_gravity_func_idx]->to_string().c_str(),
                           ImGuiComboFlags_None)) {
       for (int i = 0; i < m_gravity_function.size(); ++i) {
         const bool is_selected = (m_selected_gravity_func_idx == i);
@@ -169,12 +168,11 @@ void WhirligigUI::show_property_panel() {
       m_stop_handler();
       m_apply_handler();
       m_start_handler();
-    }
-    else {
+    } else {
       m_apply_handler();
     }
     m_apply_button_enabled = false;
-  } 
+  }
   ImGui::EndDisabled();
 }
 

@@ -9,10 +9,10 @@
 #include "framebuffer.hh"
 #include "shader_program.hh"
 #include "spring.hh"
+#include "spring_simulation.hh"
 #include "spring_ui.hh"
 #include "vertex_array.hh"
 #include "window.hh"
-#include "spring_simulation.hh"
 
 struct WeightVertex {
   glm::vec3 position;

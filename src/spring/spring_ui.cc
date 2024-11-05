@@ -1,7 +1,8 @@
 #include "spring_ui.hh"
 
-SpringUI::SpringUI(Window& window, const Framebuffer& framebuffer, Spring& spring, std::function<void(void)> start_handler,
-                   std::function<void(void)> stop_handler, std::function<void(void)> apply_handler, std::function<void(void)> skip_handler)
+SpringUI::SpringUI(Window& window, const Framebuffer& framebuffer, Spring& spring,
+                   std::function<void(void)> start_handler, std::function<void(void)> stop_handler,
+                   std::function<void(void)> apply_handler, std::function<void(void)> skip_handler)
     : UI(window),
       m_window(window),
       m_framebuffer(framebuffer),
@@ -87,10 +88,9 @@ void SpringUI::show_property_panel() {
   ImGui::BeginGroup();
   ImGui::BeginDisabled(!m_start_button_enabled);
   if (ImGui::Button("Start", size)) {
-    if (!m_time.empty()) { 
+    if (!m_time.empty()) {
       m_start_handler();
-    }
-    else {
+    } else {
       m_apply_handler();
       m_spring.reset(m_weight_starting_position, m_weight_starting_velocity);
       m_start_handler();
@@ -132,7 +132,7 @@ void SpringUI::show_property_panel() {
   ImGui::PushItemWidth(-1);
   ImGui::DragInt("##skip_frames", &m_skip_frames, 1.0f, 1, 1e4);
   ImGui::Separator();
-  
+
   imgui_center_text("App information");
   ImGuiIO& io = ImGui::GetIO();
   ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
@@ -173,8 +173,7 @@ void SpringUI::show_property_panel() {
 
     ImGui::Text("w(t):");
     ImGui::SameLine();
-    if (ImGui::BeginCombo("##rest_func",
-                          m_rest_position_functions[m_selected_rest_pos_func_idx]->to_string().c_str(),
+    if (ImGui::BeginCombo("##rest_func", m_rest_position_functions[m_selected_rest_pos_func_idx]->to_string().c_str(),
                           ImGuiComboFlags_None)) {
       for (int i = 0; i < m_rest_position_functions.size(); ++i) {
         const bool is_selected = (m_selected_rest_pos_func_idx == i);
@@ -213,12 +212,11 @@ void SpringUI::show_property_panel() {
       m_stop_handler();
       m_apply_handler();
       m_start_handler();
-    }
-    else {
+    } else {
       m_apply_handler();
     }
     m_apply_button_enabled = false;
-  } 
+  }
   ImGui::EndDisabled();
 
   ImGui::EndChild();
@@ -233,7 +231,7 @@ void SpringUI::show_pos_vel_acc_graph() {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
     if (ImPlot::BeginPlot("Position, velocity and acceleration", ImVec2(-1, -1), ImPlotFlags_Equal)) {
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
-      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit; 
+      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit;
       ImPlot::PlotLine("Position", m_time.data(), m_weight_position.data(), m_time.size());
       ImPlot::PlotLine("Velocity", m_time.data(), m_weight_velocity.data(), m_time.size());
       ImPlot::PlotLine("Acceleration", m_time.data(), m_weight_acceleration.data(), m_time.size());
