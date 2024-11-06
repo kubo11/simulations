@@ -1,33 +1,22 @@
 #include "whirligig_app.hh"
 
-WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx{} {
+WhirligigApp::WhirligigApp() : App("Whirligig") {
   glDisable(GL_DEPTH_TEST);
 
   m_camera->rotate(glm::vec2(0.0f, 4.0f), 1e-3f);
 
-  m_whirligig = std::make_unique<Whirligig>(glm::quat(0.0f, 0.0f, 0.0f, 0.0f), 0.0f, 0.0f, 0.0f,
-                                            std::move(std::make_unique<ConstFunction>(0)));
+  auto [message_queue_reader, message_queue_writer] = MessageQueue<WhirligigMessage>::create();
+  m_message_queue = std::move(message_queue_reader);
 
-  m_ui = std::make_unique<WhirligigUI>(
-      *m_window, *m_whirligig, [this]() { m_simulation->start(); }, [this]() { m_simulation->stop(); },
-      [this]() {
-        m_ui->update_whirligig_parameters();
-        m_simulation->set_dt(m_ui->get_dt());
-        m_trajectory_length = m_ui->get_trajectory_length();
-        m_trajectory_vertices.resize(m_trajectory_length, Vertex{{0.0f, 0.0f, 0.0f}});
-      },
-      [this]() { m_simulation->add_skip_frames(m_ui->get_skip_frames_count()); });
+  m_ui = std::make_unique<WhirligigUI>(*m_window, message_queue_writer);
 
-  m_simulation = std::make_unique<WhirligigSimulation>(
+  m_simulation = std::make_unique<Simulation<Whirligig>>(
       m_ui->get_dt(),
-      [this]() {
-        m_ui->update_whirligig_data();
-        this->update_visualization_data();
-      },
-      *m_whirligig);
+      [this](const Whirligig& whirligig) {
+        m_ui->update_whirligig_data(whirligig);
+        this->update_visualization_data(whirligig);
+      });
 
-  m_ui->reset_whirligig_parameters();
-  m_ui->update_whirligig_data();
   m_trajectory_length = m_ui->get_trajectory_length();
 
   auto cube_vertices = std::vector<NormalVertex>{
@@ -97,7 +86,11 @@ WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx{} {
   m_basic_shader = std::move(ShaderProgram::load("src/whirligig/shaders/basic"));
   m_phong_shader = std::move(ShaderProgram::load("src/whirligig/shaders/phong"));
 
-  update_visualization_data();
+  m_simulation->apply([&ui = *m_ui, this](Whirligig& whirligig){
+    ui.update_whirligig_parameters(whirligig);
+    ui.reset_whirligig(whirligig);
+    this->update_visualization_data(whirligig);
+  });
 }
 
 WhirligigApp::~WhirligigApp() { m_simulation->stop(); }
@@ -110,7 +103,9 @@ void WhirligigApp::update(float dt) {
 }
 
 void WhirligigApp::render_visualization() {
-  std::lock_guard<std::mutex> guard(m_visualization_mtx);
+  m_message_queue->foreach([this](auto msg) {
+    this->handle_message(std::move(msg));
+  });
 
   if (m_ui->show_plane()) {
     m_phong_shader->bind();
@@ -165,8 +160,8 @@ void WhirligigApp::render_visualization() {
     m_basic_shader->set_and_commit_uniform_value("color", glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
     m_trajectory_vertex_array->bind();
     glDisable(GL_CULL_FACE);
-    glDrawArrays(GL_LINES, 0, m_trajectory_offset);
-    glDrawArrays(GL_LINES, m_trajectory_offset + 1, m_gravity_vector_vertex_array->get_draw_size());
+    glDrawArrays(GL_LINE_STRIP, 0, m_trajectory_offset);
+    glDrawArrays(GL_LINE_STRIP, m_trajectory_offset, m_trajectory_vertex_array->get_draw_size() - m_trajectory_offset);
     glEnable(GL_CULL_FACE);
     m_trajectory_vertex_array->unbind();
     m_basic_shader->unbind();
@@ -185,17 +180,61 @@ void WhirligigApp::render_visualization() {
   }
 }
 
-void WhirligigApp::update_visualization_data() {
-  std::lock_guard<std::mutex> guard(m_visualization_mtx);
-  auto mass_center = 0.5f * m_whirligig->get_diagonal();
-  auto scale = m_whirligig->get_gravity() / 9.81f;
+void WhirligigApp::update_visualization_data(const Whirligig& whirligig) {
+  auto cube_scale = whirligig.get_cube_size();
+  auto straight_up_matrix = glm::mat4(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.5f, 0.0f, -0.5f)));
+  m_cube_model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(cube_scale, cube_scale, cube_scale)) * straight_up_matrix * glm::mat4(whirligig.get_orientation());
+  auto diagonal = glm::vec3(m_cube_model_matrix * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+  auto mass_center = 0.5f * diagonal;
+  m_trajectory_vertices[m_trajectory_offset] = Vertex{diagonal};
+  m_trajectory_offset = (m_trajectory_offset + 1) % m_trajectory_length;
+  if (m_trajectory_offset == 0) {
+    m_trajectory_vertices[m_trajectory_offset] = Vertex{diagonal};
+    m_trajectory_offset = (m_trajectory_offset + 1) % m_trajectory_length;
+  }
+  auto scale = whirligig.get_gravity() / 9.81f;
   auto scale_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, scale, 1.0f));
   m_gravity_vector_model_matrix = glm::translate(glm::mat4(1.0f), mass_center) * scale_matrix;
-  auto straight_up_matrix = glm::mat4(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.5f, 0.0f, -0.5f)));
-  auto incline_matrix = glm::rotate(glm::radians(m_whirligig->get_starting_incline()), glm::vec3(0.0f, 0.0f, -1.0f));
-  auto cube_scale = m_whirligig->get_cube_size();
-  m_cube_model_matrix = glm::mat4(m_whirligig->get_orientation()) * incline_matrix * straight_up_matrix *
-                        glm::scale(glm::mat4(1.0f), glm::vec3(cube_scale, cube_scale, cube_scale));
-  m_trajectory_vertices[m_trajectory_offset] = Vertex{m_whirligig->get_diagonal()};
-  m_trajectory_offset = (m_trajectory_offset + 1) % m_trajectory_length;
+}
+
+void WhirligigApp::handle_message(WhirligigMessage msg) {
+  switch (msg) {
+  case WhirligigMessage::Start:
+    m_simulation->start();
+    break;
+  case WhirligigMessage::Stop:
+    m_simulation->stop();
+    break;
+
+  case WhirligigMessage::Restart:
+    m_simulation->stop();
+    m_simulation->apply([&ui = *m_ui](Whirligig& whirligig){
+      ui.update_whirligig_parameters(whirligig);
+      ui.reset_whirligig(whirligig);
+    });
+    m_simulation->set_dt(m_ui->get_dt());
+    m_trajectory_length = m_ui->get_trajectory_length();
+    m_trajectory_offset = 0;
+    m_trajectory_vertices.clear();
+    m_trajectory_vertices.resize(m_trajectory_length, Vertex{{0.0f, 0.0f, 0.0f}});
+    m_simulation->start();
+    break;
+
+  case WhirligigMessage::Apply:
+    m_simulation->apply([&ui = *m_ui](Whirligig& whirligig){
+      ui.update_whirligig_parameters(whirligig);
+    });
+    m_simulation->set_dt(m_ui->get_dt());
+    m_trajectory_length = m_ui->get_trajectory_length();
+    m_trajectory_offset = std::min(m_trajectory_offset, m_trajectory_length);
+    m_trajectory_vertices.resize(m_trajectory_length, Vertex{{0.0f, 0.0f, 0.0f}});
+    break;
+
+  case WhirligigMessage::Skip:
+    m_simulation->set_skip_frames(m_ui->get_skip_frames_count());
+    break;
+
+  default:
+    break;
+  }
 }

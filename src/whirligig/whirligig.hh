@@ -7,36 +7,41 @@
 
 class Whirligig {
  public:
-  Whirligig(glm::quat starting_orientation, float starting_angular_velocity, float cube_size, float cube_density,
+  Whirligig();
+
+  Whirligig(float starting_tilt, float starting_angular_velocity, float cube_size, float cube_density,
             std::unique_ptr<Function> gravity_function);
 
   void update(float dt);
-  void reset(glm::quat starting_orientation, float starting_angular_velocity);
-  void reset(float starting_incline, float starting_angular_velocity);
+  void reset(float starting_cube_tilt, float starting_angular_velocity);
 
-  float get_t();
-  glm::vec3 get_diagonal();
-  float get_angular_velocity();
-  float get_gravity();
-  glm::quat get_orientation();
-  float get_starting_incline();
-  float get_cube_size();
+  float get_t() const;
+  glm::vec3 get_diagonal() const;
+  glm::vec3 get_angular_velocity() const;
+  float get_gravity() const;
+  glm::quat get_orientation() const;
+  float get_cube_size() const;
 
   void set_cube_size(float size);
   void set_cube_density(float density);
   void set_gravity_function(std::unique_ptr<Function> func);
+  void set_gravity(bool gravity);
 
  private:
   float m_t;
   float m_cube_size = 1.0f;
   float m_cube_density = 1.0f;
+  bool m_enable_gravity = true;
   glm::quat m_orientation;
-  float m_angular_velocity = 1.0f;
+  glm::quat m_tilt_quat = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+  glm::vec3 m_angular_velocity = {0.0f, 0.0f, 0.0f};
   float m_gravity = 0.0f;
-  float m_starting_incline = 0.0f;
+  glm::mat3 m_inertia_tensor = glm::mat3(0.0f);
+  glm::mat3 m_inertia_tensor_inv = glm::mat3(0.0f);
   std::unique_ptr<Function> m_gravity_function;
 
-  std::mutex m_whirligig_mtx;
+  void update_intertia_tensor(glm::quat tilt_quat);
+  glm::vec3 get_torque() const;
 };
 
 #endif  // SIMULATIONS_WHIRLIGIG

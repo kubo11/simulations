@@ -7,20 +7,21 @@
 
 class Spring {
  public:
+  Spring();
   Spring(float mass, float elasticity, float damping, float position, float velocity,
          std::unique_ptr<Function> rest_position_function, std::unique_ptr<Function> field_force_function);
 
   void update(float dt);
   void reset(float position = 0.0f, float velocity = 0.0f);
 
-  float get_t();
-  float get_rest_position();
-  float get_weight_position();
-  float get_weight_velocity();
-  float get_weight_acceleration();
-  float get_field_force();
-  float get_elasticity_force();
-  float get_damping_force();
+  float get_t() const;
+  float get_rest_position() const;
+  float get_weight_position() const;
+  float get_weight_velocity() const;
+  float get_weight_acceleration() const;
+  float get_field_force() const;
+  float get_elasticity_force() const;
+  float get_damping_force() const;
 
   void set_weight_mass(float mass);
   void set_elasticity_coef(float elasticity);
@@ -43,8 +44,6 @@ class Spring {
   float m_damping_coef;
   std::unique_ptr<Function> m_rest_position_function;
   std::unique_ptr<Function> m_field_force_function;
-
-  std::mutex m_spring_mtx;
 };
 
 #endif  // SIMULATIONS_SPRING

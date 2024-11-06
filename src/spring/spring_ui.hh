@@ -1,21 +1,31 @@
 #ifndef SIMULATIONS_SPRING_UI
 #define SIMULATIONS_SPRING_UI
 
+#include "pch.hh"
+
 #include "framebuffer.hh"
 #include "function.hh"
-#include "pch.hh"
+#include "message_queue.hh"
 #include "spring.hh"
 #include "ui.hh"
 #include "window.hh"
 
+enum SpringMessage {
+  Start,
+  Stop,
+  Restart,
+  Apply,
+  Skip
+};
+
 class SpringUI : public UI {
  public:
-  SpringUI(Window& window, const Framebuffer& framebuffer, Spring& spring, std::function<void(void)> start_handler,
-           std::function<void(void)> stop_handler, std::function<void(void)> restart_handler,
-           std::function<void(void)> skip_handler);
+  SpringUI(Window& window, const Framebuffer& framebuffer, std::shared_ptr<MessageQueueWriter<SpringMessage>> message_queue);
 
-  void update_spring_data();
-  void update_spring_parameters();
+  void update_spring_data(const Spring& spring);
+  void update_spring_parameters(Spring& spring);
+  void reset_spring(Spring& spring);
+  void clear();
 
   float get_dt();
   unsigned int get_skip_frames_count();
@@ -50,19 +60,12 @@ class SpringUI : public UI {
   const Window& m_window;
   const Framebuffer& m_framebuffer;
 
-  Spring& m_spring;
-
-  const std::function<void(void)> m_start_handler;
-  const std::function<void(void)> m_stop_handler;
-  const std::function<void(void)> m_apply_handler;
-  const std::function<void(void)> m_skip_handler;
+  std::shared_ptr<MessageQueueWriter<SpringMessage>> m_message_queue;
 
   bool m_start_button_enabled = false;
   bool m_stop_button_enabled = false;
   bool m_apply_button_enabled = false;
   bool m_skip_button_enabled = false;
-
-  void clear();
 
   void show_property_panel();
   void show_pos_vel_acc_graph();

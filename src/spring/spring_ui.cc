@@ -1,18 +1,12 @@
 #include "spring_ui.hh"
 
-SpringUI::SpringUI(Window& window, const Framebuffer& framebuffer, Spring& spring,
-                   std::function<void(void)> start_handler, std::function<void(void)> stop_handler,
-                   std::function<void(void)> apply_handler, std::function<void(void)> skip_handler)
+SpringUI::SpringUI(Window& window, const Framebuffer& framebuffer, std::shared_ptr<MessageQueueWriter<SpringMessage>> message_queue)
     : UI(window),
       m_window(window),
       m_framebuffer(framebuffer),
-      m_spring(spring),
+      m_message_queue(message_queue),
       m_rest_position_functions(),
       m_field_force_function(),
-      m_start_handler(start_handler),
-      m_stop_handler(stop_handler),
-      m_apply_handler(apply_handler),
-      m_skip_handler(skip_handler),
       m_ui_mtx() {
   m_rest_position_functions.emplace_back(std::unique_ptr<Function>(new ConstFunction(0.0f)));
   m_rest_position_functions.emplace_back(std::unique_ptr<Function>(new StepFunction(1.0f, 0.0f, 0.0f)));
@@ -24,24 +18,28 @@ SpringUI::SpringUI(Window& window, const Framebuffer& framebuffer, Spring& sprin
   m_field_force_function.emplace_back(std::unique_ptr<Function>(new SinFunction(1.0f, 1.0f, 0.0f)));
 }
 
-void SpringUI::update_spring_data() {
+void SpringUI::update_spring_data(const Spring& spring) {
   std::lock_guard<std::mutex> guard(m_ui_mtx);
-  m_weight_position.push_back(m_spring.get_weight_position());
-  m_weight_velocity.push_back(m_spring.get_weight_velocity());
-  m_weight_acceleration.push_back(m_spring.get_weight_acceleration());
-  m_elasticity_force.push_back(m_spring.get_elasticity_force());
-  m_damping_force.push_back(m_spring.get_damping_force());
-  m_field_force.push_back(m_spring.get_field_force());
-  m_rest_position.push_back(m_spring.get_rest_position());
-  m_time.push_back(m_spring.get_t());
+  m_weight_position.push_back(spring.get_weight_position());
+  m_weight_velocity.push_back(spring.get_weight_velocity());
+  m_weight_acceleration.push_back(spring.get_weight_acceleration());
+  m_elasticity_force.push_back(spring.get_elasticity_force());
+  m_damping_force.push_back(spring.get_damping_force());
+  m_field_force.push_back(spring.get_field_force());
+  m_rest_position.push_back(spring.get_rest_position());
+  m_time.push_back(spring.get_t());
 }
 
-void SpringUI::update_spring_parameters() {
-  m_spring.set_elasticity_coef(m_elasticity_coef);
-  m_spring.set_damping_coef(m_damping_coef);
-  m_spring.set_field_force_function(m_field_force_function[m_selected_field_force_func_idx]->copy());
-  m_spring.set_rest_position_function(m_rest_position_functions[m_selected_rest_pos_func_idx]->copy());
-  m_spring.set_weight_mass(m_weight_mass);
+void SpringUI::update_spring_parameters(Spring& spring) {
+  spring.set_elasticity_coef(m_elasticity_coef);
+  spring.set_damping_coef(m_damping_coef);
+  spring.set_field_force_function(m_field_force_function[m_selected_field_force_func_idx]->copy());
+  spring.set_rest_position_function(m_rest_position_functions[m_selected_rest_pos_func_idx]->copy());
+  spring.set_weight_mass(m_weight_mass);
+}
+
+void SpringUI::reset_spring(Spring& spring) {
+  spring.reset(m_weight_starting_position, m_weight_starting_velocity);
 }
 
 void SpringUI::clear() {
@@ -88,13 +86,7 @@ void SpringUI::show_property_panel() {
   ImGui::BeginGroup();
   ImGui::BeginDisabled(!m_start_button_enabled);
   if (ImGui::Button("Start", size)) {
-    if (!m_time.empty()) {
-      m_start_handler();
-    } else {
-      m_apply_handler();
-      m_spring.reset(m_weight_starting_position, m_weight_starting_velocity);
-      m_start_handler();
-    }
+    m_message_queue->push(SpringMessage::Start);
     m_start_button_enabled = false;
     m_stop_button_enabled = true;
     m_skip_button_enabled = true;
@@ -103,7 +95,7 @@ void SpringUI::show_property_panel() {
   ImGui::SameLine();
   ImGui::BeginDisabled(!m_stop_button_enabled);
   if (ImGui::Button("Pause", size)) {
-    m_stop_handler();
+    m_message_queue->push(SpringMessage::Stop);
     m_stop_button_enabled = false;
     m_start_button_enabled = true;
     m_skip_button_enabled = false;
@@ -111,11 +103,7 @@ void SpringUI::show_property_panel() {
   ImGui::EndDisabled();
   ImGui::SameLine();
   if (ImGui::Button("Restart", size)) {
-    m_stop_handler();
-    m_apply_handler();
-    m_spring.reset(m_weight_starting_position, m_weight_starting_velocity);
-    clear();
-    m_start_handler();
+    m_message_queue->push(SpringMessage::Restart);
     m_start_button_enabled = false;
     m_stop_button_enabled = true;
     m_skip_button_enabled = true;
@@ -125,7 +113,7 @@ void SpringUI::show_property_panel() {
 
   ImGui::BeginDisabled(!m_skip_button_enabled);
   if (ImGui::Button("Skip", size)) {
-    m_skip_handler();
+    m_message_queue->push(SpringMessage::Skip);
   }
   ImGui::EndDisabled();
   ImGui::SameLine();
@@ -208,13 +196,7 @@ void SpringUI::show_property_panel() {
   }
   ImGui::BeginDisabled(!m_apply_button_enabled);
   if (ImGui::Button("Apply", ImVec2(-1.0, 0.0))) {
-    if (m_stop_button_enabled) {
-      m_stop_handler();
-      m_apply_handler();
-      m_start_handler();
-    } else {
-      m_apply_handler();
-    }
+    m_message_queue->push(SpringMessage::Apply);
     m_apply_button_enabled = false;
   }
   ImGui::EndDisabled();
