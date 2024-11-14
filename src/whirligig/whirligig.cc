@@ -95,8 +95,7 @@ void Whirligig::update_intertia_tensor(glm::quat tilt_quat) {
 glm::vec3 Whirligig::get_torque() const {
   if (!m_enable_gravity) return glm::vec3(0.0f);
   auto q = m_orientation * glm::vec3(m_cube_size) / 2.0f;
-  glm::vec3 g = glm::vec3(-1, -1, -1);
-  g = glm::normalize(g) * m_gravity;
+  glm::vec3 g = m_gravity * glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
   g = glm::cross(q, g);
   glm::quat qN = glm::conjugate(m_orientation) * glm::quat(0, g) * m_orientation;
   return glm::vec3{qN.x, qN.y, qN.z};

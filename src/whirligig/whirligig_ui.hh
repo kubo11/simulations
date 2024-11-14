@@ -53,9 +53,9 @@ class WhirligigUI : public UI {
   float m_starting_angular_velocity = 45.0f;
   std::vector<std::unique_ptr<Function>> m_gravity_function;
   unsigned int m_selected_gravity_func_idx = 0;
-  float m_dt = 0.01f;
+  float m_dt = 0.001f;
   int m_skip_frames = 100;
-  int m_path_length = 1000;
+  int m_path_length = 5000000;
 
   glm::vec3 m_orientation = glm::vec3(0.0f, 0.0f, 0.0f);
   float m_gravity = 0.0f;

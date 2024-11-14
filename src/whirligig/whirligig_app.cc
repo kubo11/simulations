@@ -1,6 +1,6 @@
 #include "whirligig_app.hh"
 
-WhirligigApp::WhirligigApp() : App("Whirligig") {
+WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx() {
   glDisable(GL_DEPTH_TEST);
 
   m_camera->rotate(glm::vec2(0.0f, 4.0f), 1e-3f);
@@ -107,6 +107,7 @@ void WhirligigApp::render_visualization() {
     this->handle_message(std::move(msg));
   });
 
+  std::lock_guard<std::mutex> guard(m_visualization_mtx);
   if (m_ui->show_plane()) {
     m_phong_shader->bind();
     m_phong_shader->set_and_commit_uniform_value("model", m_plane_model_matrix);
@@ -160,7 +161,7 @@ void WhirligigApp::render_visualization() {
     m_basic_shader->set_and_commit_uniform_value("color", glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
     m_trajectory_vertex_array->bind();
     glDisable(GL_CULL_FACE);
-    glDrawArrays(GL_LINE_STRIP, 0, m_trajectory_offset);
+    glDrawArrays(GL_LINE_STRIP, 0, m_trajectory_offset-10);
     glDrawArrays(GL_LINE_STRIP, m_trajectory_offset, m_trajectory_vertex_array->get_draw_size() - m_trajectory_offset);
     glEnable(GL_CULL_FACE);
     m_trajectory_vertex_array->unbind();
@@ -181,6 +182,7 @@ void WhirligigApp::render_visualization() {
 }
 
 void WhirligigApp::update_visualization_data(const Whirligig& whirligig) {
+  std::lock_guard<std::mutex> guard(m_visualization_mtx);
   auto cube_scale = whirligig.get_cube_size();
   auto straight_up_matrix = glm::mat4(glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.5f, 0.0f, -0.5f)));
   m_cube_model_matrix = glm::scale(glm::mat4(1.0f), glm::vec3(cube_scale, cube_scale, cube_scale)) * straight_up_matrix * glm::mat4(whirligig.get_orientation());

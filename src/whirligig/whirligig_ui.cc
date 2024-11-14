@@ -129,7 +129,7 @@ void WhirligigUI::show_property_panel() {
     if (ImGui::DragFloat("##cube_density", &m_cube_density)) m_apply_button_enabled = true;
     ImGui::Text("dt:              ");
     ImGui::SameLine();
-    if (ImGui::DragFloat("##dt", &m_dt)) m_apply_button_enabled = true;
+    if (ImGui::DragFloat("##dt", &m_dt, 1.0f, 0.0f, 0.0f, "%.8f")) m_apply_button_enabled = true;
     ImGui::Text("g(t):            ");
     ImGui::SameLine();
     ImGui::BeginDisabled(!m_enable_gravity);

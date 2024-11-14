@@ -64,26 +64,26 @@ class Simulation {
   const UpdateCallback<T> m_update_callback;
 
   void loop() {
+    static auto prev_time = std::chrono::high_resolution_clock::now();
     while (true) {
-      auto beg = std::chrono::high_resolution_clock::now();
+      auto curr_time = std::chrono::high_resolution_clock::now();
+      auto loop_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - prev_time).count();
+      prev_time = curr_time;
       {
         std::lock_guard<std::mutex> guard(m_simulation_mtx);
-        beg = std::chrono::high_resolution_clock::now();
+
         if (!m_run) return;
-        m_simulatable.update(m_dt);
+        m_simulatable.update(loop_dt);
         m_update_callback(m_simulatable);
         if (m_skip_frames_count > 0) {
           --m_skip_frames_count;
           continue;
         }
       }
-      auto end = std::chrono::high_resolution_clock::now();
-      float loop_runtime = std::chrono::duration<float, std::chrono::seconds::period>(beg - end).count();
-      if (loop_runtime > m_dt) {
-        std::cout << "Simulation running late: " << std::to_string(loop_runtime - m_dt) << std::endl;
-      }
-      if (loop_runtime < m_dt) {
-        std::this_thread::sleep_for(std::chrono::duration<float, std::chrono::seconds::period>(m_dt - loop_runtime));
+      curr_time = std::chrono::high_resolution_clock::now();
+      auto step_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - prev_time).count();
+      if (step_dt < m_dt) {
+        std::this_thread::sleep_for(std::chrono::duration<float, std::chrono::seconds::period>(m_dt - step_dt));
       }
     }
   }

@@ -81,6 +81,8 @@ class WhirligigApp : public App {
   unsigned int m_trajectory_length = 0u;
   std::vector<Vertex> m_trajectory_vertices;
 
+  std::mutex m_visualization_mtx;
+
   void render_visualization();
   void update_visualization_data(const Whirligig& whirligig);
   void handle_message(WhirligigMessage msg);
