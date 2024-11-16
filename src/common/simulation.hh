@@ -9,16 +9,17 @@ concept simulatable = requires(T v, float dt) {
   { v.update(dt) };
 };
 
-template<simulatable T>
+template <simulatable T>
 using UpdateCallback = std::function<void(const T&)>;
 
-template<simulatable T>
+template <simulatable T>
 using ApplyCallback = std::function<void(T&)>;
 
-template<simulatable T>
+template <simulatable T>
 class Simulation {
  public:
-  Simulation(float dt, const UpdateCallback<T>& callback) : m_dt(dt), m_update_callback(callback), m_simulation_thread(), m_simulation_mtx(), m_simulatable() {}
+  Simulation(float dt, const UpdateCallback<T>& callback)
+      : m_dt(dt), m_update_callback(callback), m_simulation_thread(), m_simulation_mtx(), m_simulatable() {}
 
   virtual ~Simulation() { stop(); }
 
@@ -62,13 +63,14 @@ class Simulation {
   std::mutex m_simulation_mtx;
   T m_simulatable;
   const UpdateCallback<T> m_update_callback;
+  std::chrono::system_clock::time_point m_prev_time = std::chrono::high_resolution_clock::now();
 
   void loop() {
-    static auto prev_time = std::chrono::high_resolution_clock::now();
+    m_prev_time = std::chrono::high_resolution_clock::now();
     while (true) {
       auto curr_time = std::chrono::high_resolution_clock::now();
-      auto loop_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - prev_time).count();
-      prev_time = curr_time;
+      auto loop_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - m_prev_time).count();
+      m_prev_time = curr_time;
       {
         std::lock_guard<std::mutex> guard(m_simulation_mtx);
 
@@ -81,7 +83,7 @@ class Simulation {
         }
       }
       curr_time = std::chrono::high_resolution_clock::now();
-      auto step_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - prev_time).count();
+      auto step_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - m_prev_time).count();
       if (step_dt < m_dt) {
         std::this_thread::sleep_for(std::chrono::duration<float, std::chrono::seconds::period>(m_dt - step_dt));
       }

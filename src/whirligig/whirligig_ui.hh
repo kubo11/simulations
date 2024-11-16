@@ -9,13 +9,7 @@
 #include "whirligig.hh"
 #include "window.hh"
 
-enum WhirligigMessage {
-  Start,
-  Stop,
-  Restart,
-  Apply,
-  Skip
-};
+enum WhirligigMessage { Start, Stop, Restart, Apply, Skip };
 
 class WhirligigUI : public UI {
  public:
@@ -55,7 +49,7 @@ class WhirligigUI : public UI {
   unsigned int m_selected_gravity_func_idx = 0;
   float m_dt = 0.001f;
   int m_skip_frames = 100;
-  int m_path_length = 5000000;
+  int m_path_length = 10000;
 
   glm::vec3 m_orientation = glm::vec3(0.0f, 0.0f, 0.0f);
   float m_gravity = 0.0f;
