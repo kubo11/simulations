@@ -13,12 +13,16 @@ Whirligig::Whirligig(float starting_tilt, float starting_angular_velocity, float
 
 void Whirligig::update(float dt) {
   auto h = dt;
-  auto k1w = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * m_angular_velocity, m_angular_velocity));
-  auto k2w = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * (m_angular_velocity + k1w * h / 2.0f), m_angular_velocity + k1w * h / 2.0f));
-  auto k3w = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * (m_angular_velocity + k2w * h / 2.0f), m_angular_velocity + k2w * h / 2.0f));
-  auto k4w = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * (m_angular_velocity + k3w * h), m_angular_velocity + k3w * h));
+  auto k1w = m_angular_velocity;
+  auto k1v = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * k1w, k1w));
+  auto k2w = m_angular_velocity + k1v * h / 2.0f;
+  auto k2v = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * k2w, k2w));
+  auto k3w = m_angular_velocity + k2v * h / 2.0f;
+  auto k3v = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * k3w, k3w));
+  auto k4w = m_angular_velocity + k3v * h;
+  auto k4v = m_inertia_tensor_inv * (get_torque() + glm::cross(m_inertia_tensor * k4w, k4w));
 
-  m_angular_velocity += h / 6.0f * (k1w + 2.0f * k2w + 2.0f * k3w + k4w);
+  m_angular_velocity += h / 6.0f * (k1v + 2.0f * k2v + 2.0f * k3v + k4v);
 
   auto k1q = m_orientation * glm::quat(0.0f, m_angular_velocity / 2.0f);
   auto k2q = (m_orientation + k1q * h / 2.0f) * glm::quat(0.0f, m_angular_velocity / 2.0f);
