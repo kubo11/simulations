@@ -89,9 +89,36 @@ void JellyUI::show_property_panel() {
     imgui_center_text("Simulation information");
 
     imgui_center_text("Simulation properties");
+    ImGui::Text("mass       ");
+    ImGui::SameLine();
+    if (ImGui::DragFloat("##mass", &m_mass)) m_apply_button_enabled = true;
+    ImGui::Text("c1         ");
+    ImGui::SameLine();
+    if (ImGui::DragFloat("##c1", &m_c1)) m_apply_button_enabled = true;
+    ImGui::Text("c2         ");
+    ImGui::SameLine();
+    if (ImGui::DragFloat("##c2", &m_c2)) m_apply_button_enabled = true;
+    ImGui::Text("k          ");
+    ImGui::SameLine();
+    if (ImGui::DragFloat("##k", &m_k)) m_apply_button_enabled = true;
+    ImGui::Text("distortion ");
+    ImGui::SameLine();
+    ImGui::DragFloat("##distortion", &m_distortion_amount);
+    ImGui::Text("position   ");
+    ImGui::SameLine();
+    ImGui::DragFloat3("##position", m_control_frame_position);
+    ImGui::Text("orientation");
+    ImGui::SameLine();
+    ImGui::DragFloat3("##orientation", m_control_frame_orientation);
+    if (ImGui::Checkbox("enable control frame springs", &m_enable_control_frame_springs)) m_apply_button_enabled = true;
 
     imgui_center_text("Visulaization properties");
-
+    ImGui::Checkbox("show control points", &m_show_control_points);
+    ImGui::Checkbox("show control points springs", &m_show_control_point_springs);
+    ImGui::Checkbox("show control frame", &m_show_control_frame);
+    ImGui::Checkbox("show control frame springs", &m_show_control_frame_springs);
+    ImGui::Checkbox("show bezier cube", &m_show_bezier_cube);
+    ImGui::Checkbox("show model", &m_show_model);
   }
   ImGui::BeginDisabled(!m_apply_button_enabled);
   if (ImGui::Button("Apply", ImVec2(-1.0, 0.0))) {
@@ -99,4 +126,7 @@ void JellyUI::show_property_panel() {
     m_apply_button_enabled = false;
   }
   ImGui::EndDisabled();
+  if (ImGui::Button("Distort", ImVec2(-1.0, 0.0))) {
+    m_message_queue->push(JellyMessage::Distort);
+  }
 }

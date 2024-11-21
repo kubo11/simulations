@@ -9,7 +9,7 @@
 #include "jelly.hh"
 #include "window.hh"
 
-enum JellyMessage { Start, Stop, Restart, Apply, Skip };
+enum JellyMessage { Start, Stop, Restart, Apply, Skip, Distort };
 
 class JellyUI : public UI {
  public:
@@ -32,6 +32,25 @@ class JellyUI : public UI {
   std::mutex m_ui_mtx;
 
   Window& m_window;
+
+  bool m_show_control_points = false;
+  bool m_show_control_point_springs = false;
+  bool m_show_control_frame = true;
+  bool m_show_control_frame_springs = false;
+  bool m_show_bounding_box = true;
+  bool m_show_bezier_cube = true;
+  bool m_show_model = false;
+
+  float m_control_frame_position[3] = {};
+  float m_control_frame_orientation[3] = {};
+
+  float m_mass = 1.0f;
+  float m_c1 = 1.0f;
+  float m_c2 = 1.0f;
+  float m_k = 1.0f;
+  float m_distortion_amount = 1.0f;
+
+  bool m_enable_control_frame_springs = true;
 
   bool m_start_button_enabled = false;
   bool m_stop_button_enabled = false;
