@@ -64,6 +64,20 @@ class JellyApp : public App {
   std::unique_ptr<Simulation<Jelly>> m_simulation;
   std::unique_ptr<JellyUI> m_ui;
 
+  std::unique_ptr<VertexArray<Vertex>> m_control_points_vertex_array;
+  std::unique_ptr<VertexArray<Vertex>> m_control_frame_vertex_array;
+  std::unique_ptr<VertexArray<Vertex>> m_control_frame_springs_vertex_array;
+  std::unique_ptr<VertexArray<NormalVertex>> m_bounding_box_vertex_array;
+
+  std::unique_ptr<ShaderProgram> m_basic_shader;
+  std::unique_ptr<ShaderProgram> m_phong_shader;
+
+  std::vector<Vertex> m_control_points_vertices_staging = {};
+  std::vector<Vertex> m_control_frame_springs_vertices_staging = {};
+
+  glm::mat4 m_control_frame_model_mat = glm::mat4(1.0f);
+  glm::mat4 m_bounding_box_model_mat = glm::scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
+
   std::mutex m_visualization_mtx;
 
   void render_visualization();

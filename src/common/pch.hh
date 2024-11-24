@@ -13,6 +13,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <random>
 #include <ranges>
 #include <set>
 #include <stdexcept>
@@ -40,6 +41,7 @@ namespace fs = std::filesystem;
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_operation.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 // imgui
 #define IMGUI_DEFINE_MATH_OPERATORS

@@ -13,10 +13,19 @@ void JellyUI::update_jelly_data(const Jelly& jelly) {
 
 void JellyUI::update_jelly_parameters(Jelly& jelly) {
   std::lock_guard<std::mutex> guard(m_ui_mtx);
+  jelly.set_mass(m_mass);
+  jelly.set_frame_position(glm::vec3(m_control_frame_position[0], m_control_frame_position[1], m_control_frame_position[2]));
+  jelly.set_damping(m_k);
+  jelly.set_inner_spring_elasticity(m_c1);
+  jelly.set_frame_spring_elasticity(m_c2);
+  jelly.set_size(1.0);
+  jelly.set_gravitational_acceleration(glm::vec3(0.0f));
+  jelly.set_distortion_amount(m_distortion_amount);
 }
 
 void JellyUI::reset_jelly(Jelly& jelly) {
   std::lock_guard<std::mutex> guard(m_ui_mtx);
+  jelly.reset();
 }
 
 float JellyUI::get_dt() {
@@ -28,6 +37,43 @@ unsigned int JellyUI::get_skip_frames_count() {
   std::lock_guard<std::mutex> guard(m_ui_mtx);
   return static_cast<unsigned int>(m_skip_frames);
 }
+
+glm::vec3 JellyUI::get_frame_position() const {
+  return glm::vec3{m_control_frame_position[0], m_control_frame_position[1], m_control_frame_position[2]};
+}
+
+glm::vec3 JellyUI::get_frame_orientation() const {
+  return glm::vec3{m_control_frame_orientation[0], m_control_frame_orientation[1], m_control_frame_orientation[2]};
+}
+
+bool JellyUI::show_control_points() const {
+   return m_show_control_points;
+}
+
+bool JellyUI::show_control_point_springs() const {
+  return m_show_control_point_springs;
+}
+
+bool JellyUI::show_control_frame() const {
+  return m_show_control_frame;
+}
+
+bool JellyUI::show_control_frame_springs() const {
+  return m_show_control_frame_springs;
+}
+
+bool JellyUI::show_bounding_box() const {
+  return m_show_bounding_box;
+}
+
+bool JellyUI::show_bezier_cube() const {
+  return m_show_bezier_cube;
+}
+
+bool JellyUI::show_model() const {
+  return m_show_model;
+}
+
 
 void JellyUI::draw() {
   ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -103,13 +149,13 @@ void JellyUI::show_property_panel() {
     if (ImGui::DragFloat("##k", &m_k)) m_apply_button_enabled = true;
     ImGui::Text("distortion ");
     ImGui::SameLine();
-    ImGui::DragFloat("##distortion", &m_distortion_amount);
+    if (ImGui::DragFloat("##distortion", &m_distortion_amount)) m_apply_button_enabled = true;
     ImGui::Text("position   ");
     ImGui::SameLine();
-    ImGui::DragFloat3("##position", m_control_frame_position);
+    if (ImGui::DragFloat3("##position", m_control_frame_position, .1f)) m_message_queue->push(JellyMessage::UpdateFrame);
     ImGui::Text("orientation");
     ImGui::SameLine();
-    ImGui::DragFloat3("##orientation", m_control_frame_orientation);
+    if (ImGui::DragFloat3("##orientation", m_control_frame_orientation, .1f)) m_message_queue->push(JellyMessage::UpdateFrame);
     if (ImGui::Checkbox("enable control frame springs", &m_enable_control_frame_springs)) m_apply_button_enabled = true;
 
     imgui_center_text("Visulaization properties");
