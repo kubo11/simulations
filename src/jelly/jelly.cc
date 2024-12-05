@@ -12,8 +12,10 @@ void Jelly::update(float dt) {
     for (unsigned int j = 0; j < s_linear_point_count; ++j) {
       for (unsigned int k = 0; k < s_linear_point_count; ++k) {
         auto [position, velocity] = runge_kutta_for_control_point(i, j, k, dt);
-        mass_positions.at(get_control_point_idx(i, j, k)) = position;
-        mass_velocities.at(get_control_point_idx(i, j, k)) = velocity;
+        auto previous_position = get_control_point_position(i, j, k);
+        auto [reflected_position, reflected_velocity] = check_and_apply_collisions(previous_position, position, velocity);
+        mass_positions.at(get_control_point_idx(i, j, k)) = reflected_position;
+        mass_velocities.at(get_control_point_idx(i, j, k)) = reflected_velocity;
       }
     }
   }
@@ -218,6 +220,83 @@ glm::vec3 Jelly::get_force_for_control_point(unsigned int i, unsigned j, unsigne
   return force;
 }
 
+std::pair<glm::vec3, glm::vec3> Jelly::check_and_apply_collisions(glm::vec3 p1, glm::vec3 p2, glm::vec3 v2) {
+  if (p2.x < m_bounding_box_surfaces[0]) {
+    auto v = p2 - p1;
+    auto t = (m_bounding_box_surfaces[0] - p1.x) / v.x;
+    auto p = p1 + v * t;
+    auto pr = p + glm::reflect(p2-p, glm::vec3(1.0f, 0.0f, 0.0f));
+    auto vr = glm::vec3{-m_collision_elasticity_coef*v2.x, v2.y, v2.z};
+    if (m_collision_model == CollisionModel::FullVelocityDamping) {
+      vr.y *= m_collision_elasticity_coef;
+      vr.z *= m_collision_elasticity_coef;
+    }
+    return check_and_apply_collisions(p, pr, vr);
+  }
+  if (p2.x > m_bounding_box_surfaces[1]) {
+    auto v = p2 - p1;
+    auto t = (m_bounding_box_surfaces[1] - p1.x) / v.x;
+    auto p = p1 + v * t;
+    auto pr = p + glm::reflect(p2-p, glm::vec3(-1.0f, 0.0f, 0.0f));
+    auto vr = glm::vec3{-m_collision_elasticity_coef*v2.x, v2.y, v2.z};
+    if (m_collision_model == CollisionModel::FullVelocityDamping) {
+      vr.y *= m_collision_elasticity_coef;
+      vr.z *= m_collision_elasticity_coef;
+    }
+    return check_and_apply_collisions(p, pr, vr);
+  }
+  if (p2.y < m_bounding_box_surfaces[2]) {
+    auto v = p2 - p1;
+    auto t = (m_bounding_box_surfaces[2] - p1.y) / v.y;
+    auto p = p1 + v * t;
+    auto pr = p + glm::reflect(p2-p, glm::vec3(0.0f, 1.0f, 0.0f));
+    auto vr = glm::vec3{v2.x, -m_collision_elasticity_coef*v2.y, v2.z};
+    if (m_collision_model == CollisionModel::FullVelocityDamping) {
+      vr.x *= m_collision_elasticity_coef;
+      vr.z *= m_collision_elasticity_coef;
+    }
+    return check_and_apply_collisions(p, pr, vr);
+  }
+  if (p2.y > m_bounding_box_surfaces[3]) {
+    auto v = p2 - p1;
+    auto t = (m_bounding_box_surfaces[3] - p1.y) / v.y;
+    auto p = p1 + v * t;
+    auto pr = p + glm::reflect(p2-p, glm::vec3(0.0f, -1.0f, 0.0f));
+    auto vr = glm::vec3{v2.x, -m_collision_elasticity_coef*v2.y, v2.z};
+    if (m_collision_model == CollisionModel::FullVelocityDamping) {
+      vr.x *= m_collision_elasticity_coef;
+      vr.z *= m_collision_elasticity_coef;
+    }
+    return check_and_apply_collisions(p, pr, vr);
+  }
+  if (p2.z < m_bounding_box_surfaces[4]) {
+    auto v = p2 - p1;
+    auto t = (m_bounding_box_surfaces[4] - p1.z) / v.z;
+    auto p = p1 + v * t;
+    auto pr = p + glm::reflect(p2-p, glm::vec3(0.0f, 0.0f, 1.0f));
+    auto vr = glm::vec3{v2.x, v2.y, -m_collision_elasticity_coef*v2.z};
+    if (m_collision_model == CollisionModel::FullVelocityDamping) {
+      vr.x *= m_collision_elasticity_coef;
+      vr.y *= m_collision_elasticity_coef;
+    }
+    return check_and_apply_collisions(p, pr, vr);
+  }
+  if (p2.z > m_bounding_box_surfaces[5]) {
+    auto v = p2 - p1;
+    auto t = (m_bounding_box_surfaces[5] - p1.z) / v.z;
+    auto p = p1 + v * t;
+    auto pr = p + glm::reflect(p2-p, glm::vec3(0.0f, 0.0f, -1.0f));
+    auto vr = glm::vec3{v2.x, v2.y, -m_collision_elasticity_coef*v2.z};
+    if (m_collision_model == CollisionModel::FullVelocityDamping) {
+      vr.x *= m_collision_elasticity_coef;
+      vr.y *= m_collision_elasticity_coef;
+    }
+    return check_and_apply_collisions(p, pr, vr);
+  }
+
+  return {p2, v2};
+}
+
 float Jelly::get_cardinal_inner_spring_base_length() const {
   return m_size / 3.0;
 }
@@ -277,4 +356,12 @@ void Jelly::set_gravitational_acceleration(const glm::vec3 acceleration) {
 
 void Jelly::set_distortion_amount(float distortion_amount) {
   m_distortion_amount = distortion_amount;
+}
+
+void Jelly::set_collision_elasticity(float elasticity) {
+  m_collision_elasticity_coef = elasticity;
+}
+
+void Jelly::set_collision_model(CollisionModel model) {
+  m_collision_model = model;
 }

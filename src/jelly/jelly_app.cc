@@ -11,7 +11,6 @@ JellyApp::JellyApp() : App("Jelly"), m_visualization_mtx() {
   m_simulation = std::make_unique<Simulation<Jelly>>(
       m_ui->get_dt(),
       [this](const Jelly& jelly) {
-        m_ui->update_jelly_data(jelly);
         this->update_visualization_data(jelly);
       });
 
@@ -107,7 +106,7 @@ JellyApp::JellyApp() : App("Jelly"), m_visualization_mtx() {
 
   m_simulation->apply([&ui = *m_ui, this](Jelly& jelly){
     ui.update_jelly_parameters(jelly);
-    ui.reset_jelly(jelly);
+    jelly.reset();
     this->update_visualization_data(jelly);
   });
 }
@@ -248,7 +247,7 @@ void JellyApp::handle_message(JellyMessage msg) {
     m_simulation->stop();
     m_simulation->apply([&ui = *m_ui](Jelly& jelly){
       ui.update_jelly_parameters(jelly);
-      ui.reset_jelly(jelly);
+      jelly.reset();
     });
     m_simulation->set_dt(m_ui->get_dt());
     m_simulation->start();
@@ -293,6 +292,7 @@ void JellyApp::handle_message(JellyMessage msg) {
     m_simulation->apply([&ui = *m_ui, q](Jelly& jelly){
       jelly.set_frame_position(ui.get_frame_position());
       jelly.set_frame_orientation(q);
+      jelly.toggle_frame_springs(ui.get_control_springs_state());
     });
     break;
   }

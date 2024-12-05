@@ -15,15 +15,14 @@ class JellyUI : public UI {
  public:
   JellyUI(Window& window, std::shared_ptr<MessageQueueWriter<JellyMessage>> message_queue);
 
-  void update_jelly_data(const Jelly& jelly);
   void update_jelly_parameters(Jelly& jelly);
-  void reset_jelly(Jelly& jelly);
 
   float get_dt();
   unsigned int get_skip_frames_count();
 
   glm::vec3 get_frame_position() const;
   glm::vec3 get_frame_orientation() const;
+  bool get_control_springs_state() const;
 
   bool show_control_points() const;
   bool show_control_point_springs() const;
@@ -55,11 +54,16 @@ class JellyUI : public UI {
   float m_control_frame_position[3] = {};
   float m_control_frame_orientation[3] = {};
 
-  float m_mass = 1.0f;
-  float m_c1 = 30.0f;
-  float m_c2 = 30.0f;
-  float m_k = 1.0f;
+  float m_mass = 0.1f;
+  float m_c1 = 10.0f;
+  float m_c2 = 1.0f;
+  float m_k = 0.1f;
   float m_distortion_amount = 0.4f;
+
+  float m_gravity[3] = {};
+
+  float m_collision_elasticity_coef = 1.0f;
+  CollisionModel m_collision_model = CollisionModel::FullVelocityDamping;
 
   bool m_enable_control_frame_springs = true;
 

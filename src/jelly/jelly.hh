@@ -3,6 +3,8 @@
 
 #include "pch.hh"
 
+enum CollisionModel { FullVelocityDamping, VelocityComponentDamping };
+
 class Jelly {
   static constexpr unsigned int s_linear_point_count = 4u;
   static constexpr unsigned int s_total_point_count = s_linear_point_count * s_linear_point_count * s_linear_point_count;
@@ -31,6 +33,8 @@ class Jelly {
   void set_frame_orientation(const glm::quat& orientation);
   void set_gravitational_acceleration(const glm::vec3 acceleration);
   void set_distortion_amount(float distortion_amount);
+  void set_collision_elasticity(float elasticity);
+  void set_collision_model(CollisionModel model);
 
  private:
   float m_t = 0.0;
@@ -41,6 +45,11 @@ class Jelly {
   float m_size = 0.0;
   float m_distortion_amount = 0.0;
   bool m_compute_frame_springs = true;
+
+  float m_collision_elasticity_coef = 0.0f;
+  CollisionModel m_collision_model = CollisionModel::FullVelocityDamping;
+  std::array<float, 6> m_bounding_box_surfaces = {-3.0, 3.0, -3.0, 3.0, -3.0, 3.0};
+
   glm::vec3 m_frame_position = {0.0, 0.0, 0.0};
   glm::quat m_frame_orientation = {};
   glm::vec3 m_gravitational_acceleration = {0.0, 0.0, 0.0};
@@ -50,6 +59,7 @@ class Jelly {
   std::pair<glm::vec3, glm::vec3> runge_kutta_for_control_point(unsigned int i, unsigned int j, unsigned int k, float dt) const;
   glm::vec3 get_force_for_control_point(unsigned int i, unsigned int j, unsigned int k, glm::vec3 pos_offset, glm::vec3 vel_offset) const;
   glm::vec3 get_elasticity_force_along_spring(glm::vec3 p1, glm::vec3 p2, float l0, float c) const;
+  std::pair<glm::vec3, glm::vec3> check_and_apply_collisions(glm::vec3 p1, glm::vec3 p2, glm::vec3 v2);
 
   float get_cardinal_inner_spring_base_length() const;
   float get_diagonal_inner_spring_base_length() const;
