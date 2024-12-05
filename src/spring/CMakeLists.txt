@@ -9,7 +9,7 @@ target_include_directories(${SIMULATION_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src/
 
 target_precompile_headers(${SIMULATION_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/src/common/pch.hh)
 
-target_link_libraries(${SIMULATION_NAME} PRIVATE glad glfw glm imgui)
+target_link_libraries(${SIMULATION_NAME} PRIVATE glad glfw glm imgui stb tinyobjloader)
 
 set(BIN_NAME ${SIMULATION_NAME})
 set(BIN_PATH ${CMAKE_CURRENT_BINARY_DIR})

@@ -18,3 +18,11 @@
 	path = external/implot
 	url = https://github.com/epezent/implot
 	branch = tags/v0.16
+[submodule "external/tinyobjloader"]
+	path = external/tinyobjloader
+	url = https://github.com/tinyobjloader/tinyobjloader.git
+	branch = tags/v2.0.0rc13
+[submodule "external/stb"]
+	path = external/stb
+	url = https://github.com/nothings/stb.git
+	branch = master

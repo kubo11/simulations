@@ -39,3 +39,13 @@ target_include_directories(
     ${IMPLOT_DIR}
     ${IMGUI_DIR}/backends
 )
+
+# stb image
+set(STB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb)
+set(STB_SOURCES ${STB_DIR}/stb_image.h)
+add_library(stb ${STB_SOURCES})
+set_target_properties(stb PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(stb PUBLIC ${STB_DIR})
+
+# tinyobjloader
+add_subdirectory(tinyobjloader)

@@ -52,6 +52,12 @@ namespace fs = std::filesystem;
 #include <implot.h>
 #include <misc/cpp/imgui_stdlib.h>
 
+// stb
+#include "stb_image.h"
+
+// tinyobjloader
+#include <tiny_obj_loader.h>
+
 // simulations
 #include "utils.hh"
 
