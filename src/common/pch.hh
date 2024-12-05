@@ -51,6 +51,7 @@ namespace fs = std::filesystem;
 #include <imgui_impl_opengl3.h>
 #include <implot.h>
 #include <misc/cpp/imgui_stdlib.h>
+#include <ImGuiFileDialog.h>
 
 // stb
 #include "stb_image.h"

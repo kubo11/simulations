@@ -40,6 +40,10 @@ target_include_directories(
     ${IMGUI_DIR}/backends
 )
 
+# ImGuiFileDialog
+add_subdirectory(imguifiledialog)
+target_link_libraries(ImGuiFileDialog imgui)
+
 # stb image
 set(STB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb)
 set(STB_SOURCES ${STB_DIR}/stb_image.h)
