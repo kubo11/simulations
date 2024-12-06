@@ -67,6 +67,9 @@ class JellyUI : public UI {
 
   bool m_enable_control_frame_springs = true;
 
+  std::string m_texture_path = fs::absolute(fs::path("resources/textures/test.png")).string();
+  std::string m_model_path = "";
+
   bool m_start_button_enabled = false;
   bool m_stop_button_enabled = false;
   bool m_apply_button_enabled = false;

@@ -192,5 +192,39 @@ void JellyUI::show_property_panel() {
     ImGui::BeginDisabled(true);
     ImGui::Checkbox("show model", &m_show_model);
     ImGui::EndDisabled();
+
+    if (ImGui::Button("Open")) {
+      IGFD::FileDialogConfig config;
+      config.path = m_texture_path;
+      ImGuiFileDialog::Instance()->OpenDialog("ChooseTexture", "Choose File", ".png,.jpg", config);
+    }
+    ImGui::SameLine();
+    ImGui::InputText("##texture_path", &m_texture_path, ImGuiInputTextFlags_ReadOnly);
+    if (ImGui::Button("Open##2")) {
+      IGFD::FileDialogConfig config;
+      config.path = m_model_path;
+      ImGuiFileDialog::Instance()->OpenDialog("ChooseModel", "Choose File", ".obj", config);
+    }
+    ImGui::SameLine();
+    ImGui::InputText("##model_path", &m_model_path, ImGuiInputTextFlags_ReadOnly);
+
+    if (ImGuiFileDialog::Instance()->Display("ChooseTexture")) {
+      if (ImGuiFileDialog::Instance()->IsOk()) {
+        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+        std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        // action
+      }
+
+      ImGuiFileDialog::Instance()->Close();
+    }
+    if (ImGuiFileDialog::Instance()->Display("ChooseModel")) {
+      if (ImGuiFileDialog::Instance()->IsOk()) {
+        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+        std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        // action
+      }
+
+      ImGuiFileDialog::Instance()->Close();
+    }
   }
 }
