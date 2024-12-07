@@ -87,7 +87,9 @@ void ShaderProgram::load_uniforms() {
   for (const auto& [name, type] : uniforms) {
     if (name.starts_with("gl_")) continue;
     auto location = get_uniform_location(m_id, name);
-    m_uniforms.emplace(name, create_uniform(name, location, type, m_id));
+    auto uniform = create_uniform(name, location, type, m_id);
+    if (!uniform) continue;
+    m_uniforms.emplace(name, std::move(uniform));
   }
 }
 
@@ -115,7 +117,7 @@ std::vector<std::pair<std::string, GLenum>> ShaderProgram::get_uniforms(GLuint i
     glGetActiveUniform(id, i, static_cast<GLsizei>(buffer.size()), &length, &size, &type, buffer.data());
 
     if (length < 1) {
-      // throw std::runtime_error(std::format("Unable to get active uniform {} for program {}", i, id));
+      throw std::runtime_error(std::format("Unable to get active uniform {} for program {}", i, id));
     }
 
     auto names = parse_uniform_names(buffer.data(), length, size);
@@ -129,7 +131,7 @@ std::vector<std::pair<std::string, GLenum>> ShaderProgram::get_uniforms(GLuint i
 
 std::vector<std::string> ShaderProgram::parse_uniform_names(const char* buffer, GLsizei length, GLint size) {
   if (size <= 0) {
-    // throw std::runtime_error(std::format("Invalid uniform name: {}", buffer));
+    throw std::runtime_error(std::format("Invalid uniform name: {}", buffer));
   }
 
   if (size == 1) {
@@ -151,7 +153,7 @@ std::vector<std::string> ShaderProgram::parse_uniform_names(const char* buffer, 
 GLuint ShaderProgram::get_uniform_location(GLuint id, const std::string& name) {
   auto location = glGetUniformLocation(id, name.c_str());
   if (location < 0) {
-    // throw std::runtime_error(std::format("Invalid uniform location: {}", location));
+    throw std::runtime_error(std::format("Invalid uniform location: {}", location));
   }
   glCheckError();
   return location;
@@ -169,7 +171,7 @@ std::string ShaderProgram::read_shader_code(const fs::path& path) {
     file.close();
     code = stream.str();
   } catch (std::ifstream::failure& e) {
-    // throw std::runtime_error(std::format("Could not read shader file: {}", e.what()));
+    throw std::runtime_error(std::format("Could not read shader file: {}", e.what()));
   }
 
   return code;

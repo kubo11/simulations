@@ -23,6 +23,7 @@ class Buffer {
     if (m_id) {
       glDeleteBuffers(1, &m_id);
       glCheckError();
+      m_id = 0;
     }
   }
 

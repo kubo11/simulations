@@ -63,6 +63,10 @@ void Window::set_size(unsigned int width, unsigned int height) {
   m_height = height;
 }
 
+void Window::set_clear_color(const glm::vec4& color) {
+  m_clear_color = color;
+}
+
 void Window::glfw_error_callback(int error, const char* description) {
   throw std::runtime_error("GLFW:" + std::to_string(error) + " " + std::string(description));
 }

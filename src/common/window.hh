@@ -23,6 +23,7 @@ class Window {
   bool is_button_pressed(int button);
 
   void set_size(unsigned int width, unsigned int height);
+  void set_clear_color(const glm::vec4& color);
 
   static void glfw_error_callback(int error, const char* description);
 

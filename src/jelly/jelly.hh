@@ -4,6 +4,14 @@
 #include "pch.hh"
 
 enum CollisionModel { FullVelocityDamping, VelocityComponentDamping };
+struct Spring {
+  glm::vec3& beg;
+  glm::vec3& end;
+  float& length;
+  float& elasticity;
+
+  glm::vec3 get_force() const;
+};
 
 class Jelly {
   static constexpr unsigned int s_linear_point_count = 4u;
@@ -45,6 +53,9 @@ class Jelly {
   float m_size = 0.0;
   float m_distortion_amount = 0.0;
   bool m_compute_frame_springs = true;
+  float m_control_frame_spring_base_length = 0.0f;
+  float m_cardinal_inner_spring_base_length = 0.0f;
+  float m_diagonal_inner_spring_base_legnth = 0.0f;
 
   float m_collision_elasticity_coef = 0.0f;
   CollisionModel m_collision_model = CollisionModel::FullVelocityDamping;
@@ -55,17 +66,20 @@ class Jelly {
   glm::vec3 m_gravitational_acceleration = {0.0, 0.0, 0.0};
   std::array<glm::vec3, s_total_point_count> m_control_point_positions = {};
   std::array<glm::vec3, s_total_point_count> m_control_point_velocities = {};
+  std::array<std::vector<Spring>, s_total_point_count> m_control_point_springs = {};
+  std::array<glm::vec3, 8> m_frame_corner_points = {};
+  std::unordered_map<int, Spring> m_control_frame_springs = {};
 
   std::pair<glm::vec3, glm::vec3> runge_kutta_for_control_point(unsigned int i, unsigned int j, unsigned int k, float dt) const;
   glm::vec3 get_force_for_control_point(unsigned int i, unsigned int j, unsigned int k, glm::vec3 pos_offset, glm::vec3 vel_offset) const;
-  glm::vec3 get_elasticity_force_along_spring(glm::vec3 p1, glm::vec3 p2, float l0, float c) const;
+  glm::vec3 get_force_along_control_frame_spring(unsigned int i, unsigned int j, unsigned int k) const;
   std::pair<glm::vec3, glm::vec3> check_and_apply_collisions(glm::vec3 p1, glm::vec3 p2, glm::vec3 v2);
 
-  float get_cardinal_inner_spring_base_length() const;
-  float get_diagonal_inner_spring_base_length() const;
-  constexpr float get_frame_spring_base_length() const;
-
   unsigned int get_control_point_idx(unsigned int i, unsigned int j, unsigned int k) const;
+
+  void setup_springs();
+  void update_frame_corner_points();
+  void update_spring_lengths();
 };
 
 #endif  // SIMULATIONS_JELLY

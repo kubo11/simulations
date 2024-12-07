@@ -1,6 +1,7 @@
 #ifndef SIMULATIONS_COMMON_PCH
 #define SIMULATIONS_COMMON_PCH
 
+#include <array>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -19,6 +20,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <tuple>
 #include <queue>
 #include <unordered_map>
 #include <variant>
@@ -53,8 +55,8 @@ namespace fs = std::filesystem;
 #include <misc/cpp/imgui_stdlib.h>
 #include <ImGuiFileDialog.h>
 
-// stb
-#include "stb_image.h"
+// // stb
+// #include "stb_image.h"
 
 // tinyobjloader
 #include <tiny_obj_loader.h>

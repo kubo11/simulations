@@ -9,7 +9,7 @@
 #include "jelly.hh"
 #include "window.hh"
 
-enum JellyMessage { Start, Stop, Restart, Apply, Skip, Distort, UpdateFrame };
+enum JellyMessage { Start, Stop, Restart, Apply, Skip, Distort, UpdateFrame, UpdateTexture, UpdateModel };
 
 class JellyUI : public UI {
  public:
@@ -23,6 +23,9 @@ class JellyUI : public UI {
   glm::vec3 get_frame_position() const;
   glm::vec3 get_frame_orientation() const;
   bool get_control_springs_state() const;
+
+  fs::path get_texture_path() const;
+  fs::path get_model_path() const;
 
   bool show_control_points() const;
   bool show_control_point_springs() const;
@@ -51,6 +54,8 @@ class JellyUI : public UI {
   bool m_show_bezier_cube = false;
   bool m_show_model = false;
 
+  bool m_enable_show_model = false;
+
   float m_control_frame_position[3] = {};
   float m_control_frame_orientation[3] = {};
 
@@ -67,7 +72,7 @@ class JellyUI : public UI {
 
   bool m_enable_control_frame_springs = true;
 
-  std::string m_texture_path = fs::absolute(fs::path("resources/textures/test.png")).string();
+  std::string m_texture_path = fs::absolute(fs::path("resources/textures/slime.jpg")).string();
   std::string m_model_path = "";
 
   bool m_start_button_enabled = false;

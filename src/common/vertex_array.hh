@@ -37,6 +37,26 @@ class VertexArray {
     }
   }
 
+  static std::unique_ptr<VertexArray<T>> create(const std::vector<T> vertices, const std::vector<VertexAttribute>& attributes) {
+    auto vertex_buffer = std::make_unique<Buffer<T>>();
+    vertex_buffer->bind();
+    vertex_buffer->copy(vertices);
+    vertex_buffer->unbind();
+    return std::make_unique<VertexArray<T>>(std::move(vertex_buffer), T::get_vertex_attributes());
+  }
+
+  static std::unique_ptr<VertexArray<T>> create(const std::vector<T> vertices, std::vector<unsigned int> indices, const std::vector<VertexAttribute>& attributes) {
+    auto vertex_buffer = std::make_unique<Buffer<T>>();
+    vertex_buffer->bind();
+    vertex_buffer->copy(vertices);
+    vertex_buffer->unbind();
+    auto index_buffer = std::make_unique<Buffer<unsigned int>>(BufferType::ElementArray);
+    index_buffer->bind();
+    index_buffer->copy(indices);
+    index_buffer->unbind();
+    return std::make_unique<VertexArray<T>>(std::move(vertex_buffer), T::get_vertex_attributes(), std::move(index_buffer));
+  }
+
   void bind() {
     glBindVertexArray(m_id);
     glCheckError();

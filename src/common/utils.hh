@@ -10,6 +10,9 @@
   class_name(const class_name&) = delete; \
   class_name& operator=(const class_name&) = delete;
 
+template<class... Ts>
+struct overloaded : Ts... { using Ts::operator()...; };
+
 inline void glCheckError_(const char* file, int line) {
   GLenum errorCode;
   while ((errorCode = glGetError()) != GL_NO_ERROR) {
@@ -37,7 +40,7 @@ inline void glCheckError_(const char* file, int line) {
         error = "INVALID_FRAMEBUFFER_OPERATION";
         break;
     }
-    // std::cout << std::format("{} | {} ({})", error, file, line) << std::endl;
+    std::cout << std::format("{} | {} ({})", error, file, line) << std::endl;
   }
   if (errorCode != GL_NO_ERROR) throw std::runtime_error("OpenGL error");
 }

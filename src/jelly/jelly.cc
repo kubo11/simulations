@@ -2,6 +2,8 @@
 
 Jelly::Jelly() {
   reset();
+  setup_springs();
+  update_frame_corner_points();
 }
 
 void Jelly::update(float dt) {
@@ -102,119 +104,12 @@ glm::vec3 Jelly::get_force_for_control_point(unsigned int i, unsigned j, unsigne
   glm::vec3 velocity = m_control_point_velocities.at(get_control_point_idx(i, j, k)) + vel_offset;
   glm::vec3 force = m_gravitational_acceleration * m_mass - m_damping_coef * velocity;
 
-  if (i > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i-1, j, k), get_cardinal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
+  for (const auto& spring : m_control_point_springs[get_control_point_idx(i, j, k)]) {
+    force += spring.get_force();
   }
 
-  if (j > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j-1, k), get_cardinal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (k > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j, k-1), get_cardinal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i+1, j, k), get_cardinal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (j < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j+1, k), get_cardinal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (k < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j, k+1), get_cardinal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i > 0 && j > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i-1, j-1, k), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (j > 0 && k > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j-1, k-1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i > 0 && k > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i-1, j, k-1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i < s_linear_point_count - 1 && j < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i+1, j+1, k), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (j < s_linear_point_count - 1 && k < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j+1, k+1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i < s_linear_point_count - 1 && k < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i+1, j, k+1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i > 0 && j < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i-1, j+1, k), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (j > 0 && k < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j-1, k+1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i > 0 && k < s_linear_point_count - 1) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i-1, j, k+1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i < s_linear_point_count - 1 && j > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i+1, j-1, k), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (j < s_linear_point_count - 1 && k > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i, j+1, k-1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (i < s_linear_point_count - 1 && k > 0) {
-    force += get_elasticity_force_along_spring(position, get_control_point_position(i+1, j, k-1), get_diagonal_inner_spring_base_length(), m_inner_spring_elasticity_coef);
-  }
-
-  if (!m_compute_frame_springs) return force;
-
-  auto size = glm::sqrt(3.0f) * m_size / 2.0f;
-  if (i == 0 && j == 0 && k == 0) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, -1.0, -1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
-  }
-
-  if (i == s_linear_point_count - 1 && j == 0 && k == 0) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(1.0, -1.0, -1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
-  }
-
-  if (i == 0 && j == s_linear_point_count - 1 && k == 0) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, 1.0, -1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
-  }
-
-  if (i == 0 && j == 0 && k == s_linear_point_count - 1) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, -1.0, 1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
-  }
-
-  if (i == s_linear_point_count - 1 && j == s_linear_point_count - 1 && k == 0) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(1.0, 1.0, -1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
-  }
-
-  if (i == 0 && j == s_linear_point_count - 1 && k == s_linear_point_count - 1) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, 1.0, 1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
-  }
-
-  if (i == s_linear_point_count - 1 && j == 0 && k == s_linear_point_count - 1) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(1.0, -1.0, 1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
-  }
-
-  if (i == s_linear_point_count - 1 && j == s_linear_point_count - 1 && k == s_linear_point_count - 1) {
-    auto frame_point = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(1.0, 1.0, 1.0)));
-    force += get_elasticity_force_along_spring(position, frame_point, get_frame_spring_base_length(), m_frame_spring_elasticity_coef);
+  if (m_compute_frame_springs) {
+    force += get_force_along_control_frame_spring(i, j, k);
   }
 
   return force;
@@ -297,25 +192,13 @@ std::pair<glm::vec3, glm::vec3> Jelly::check_and_apply_collisions(glm::vec3 p1, 
   return {p2, v2};
 }
 
-float Jelly::get_cardinal_inner_spring_base_length() const {
-  return m_size / 3.0;
-}
-
-float Jelly::get_diagonal_inner_spring_base_length() const {
-  return glm::sqrt(2.0) * m_size / 3.0;
-}
-
-constexpr float Jelly::get_frame_spring_base_length() const {
-  return 0.0;
-}
-
 unsigned int Jelly::get_control_point_idx(unsigned int i, unsigned int j, unsigned int k) const {
   return s_linear_point_count * s_linear_point_count * i + s_linear_point_count * j + k;
 }
 
-glm::vec3 Jelly::get_elasticity_force_along_spring(glm::vec3 p1, glm::vec3 p2, float l0, float c) const {
-  float l = glm::distance(p1, p2) - l0;
-  return glm::normalize(p2 - p1) * c * l;
+glm::vec3 Jelly::get_force_along_control_frame_spring(unsigned int i, unsigned int j, unsigned int k) const {
+  if (!m_control_frame_springs.contains(get_control_point_idx(i, j, k))) return glm::vec3(0.0f);
+  return m_control_frame_springs.at(get_control_point_idx(i, j, k)).get_force();
 }
 
 void Jelly::set_mass(float mass) {
@@ -336,6 +219,8 @@ void Jelly::set_frame_spring_elasticity(float elasticity) {
 
 void Jelly::set_size(float size) {
   m_size = size;
+  update_frame_corner_points();
+  update_spring_lengths();
 }
 
 void Jelly::toggle_frame_springs(bool toggle) {
@@ -344,10 +229,12 @@ void Jelly::toggle_frame_springs(bool toggle) {
 
 void Jelly::set_frame_position(const glm::vec3& position) {
   m_frame_position = position;
+  update_frame_corner_points();
 }
 
 void Jelly::set_frame_orientation(const glm::quat& orientation) {
   m_frame_orientation = orientation;
+  update_frame_corner_points();
 }
 
 void Jelly::set_gravitational_acceleration(const glm::vec3 acceleration) {
@@ -364,4 +251,61 @@ void Jelly::set_collision_elasticity(float elasticity) {
 
 void Jelly::set_collision_model(CollisionModel model) {
   m_collision_model = model;
+}
+
+void Jelly::setup_springs() {
+  update_spring_lengths();
+
+  for (int i = 0; i < s_total_point_count; ++i) {
+    int x1 = i / 16;
+    int y1 = (i / 4) % 4;
+    int z1 = i % 4;
+    for (int j = 0; j < s_total_point_count; ++j) {
+      int x2 = j / 16;
+      int y2 = (j / 4) % 4;
+      int z2 = j % 4;
+      int dx = glm::abs(x2-x1);
+      int dy = glm::abs(y2-y1);
+      int dz = glm::abs(z2-z1); 
+      if (dx <= 1 && dy <= 1 && dz <= 1 && i != j) {
+        if (dx + dy + dz == 1) {
+          m_control_point_springs[i].push_back(Spring{m_control_point_positions[i], m_control_point_positions[j], m_cardinal_inner_spring_base_length, m_inner_spring_elasticity_coef});
+        }
+        else if (dx + dy + dz == 2) {
+          m_control_point_springs[i].push_back(Spring{m_control_point_positions[i], m_control_point_positions[j], m_diagonal_inner_spring_base_legnth, m_inner_spring_elasticity_coef});
+        }
+      }
+    }
+  }
+
+  m_control_frame_springs.emplace(0, Spring{m_control_point_positions[0], m_frame_corner_points[0], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+  m_control_frame_springs.emplace(3, Spring{m_control_point_positions[3], m_frame_corner_points[1], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+  m_control_frame_springs.emplace(12, Spring{m_control_point_positions[12], m_frame_corner_points[2], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+  m_control_frame_springs.emplace(15, Spring{m_control_point_positions[15], m_frame_corner_points[3], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+  m_control_frame_springs.emplace(48, Spring{m_control_point_positions[48], m_frame_corner_points[4], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+  m_control_frame_springs.emplace(51, Spring{m_control_point_positions[51], m_frame_corner_points[5], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+  m_control_frame_springs.emplace(60, Spring{m_control_point_positions[60], m_frame_corner_points[6], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+  m_control_frame_springs.emplace(63, Spring{m_control_point_positions[63], m_frame_corner_points[7], m_control_frame_spring_base_length, m_frame_spring_elasticity_coef});
+}
+
+glm::vec3 Spring::get_force() const {
+  float l = glm::distance(beg, end) - length;
+  return glm::normalize(end - beg) * elasticity * l;
+}
+
+void Jelly::update_frame_corner_points() {
+  auto size = glm::sqrt(3.0f) * m_size / 2.0f;
+  m_frame_corner_points[0] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, -1.0, -1.0)));
+  m_frame_corner_points[1] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, -1.0, +1.0)));
+  m_frame_corner_points[2] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, +1.0, -1.0)));
+  m_frame_corner_points[3] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(-1.0, +1.0, +1.0)));
+  m_frame_corner_points[4] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(+1.0, -1.0, -1.0)));
+  m_frame_corner_points[5] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(+1.0, -1.0, +1.0)));
+  m_frame_corner_points[6] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(+1.0, +1.0, -1.0)));
+  m_frame_corner_points[7] = m_frame_position + m_frame_orientation * (size * glm::normalize(glm::vec3(+1.0, +1.0, +1.0)));
+}
+
+void Jelly::update_spring_lengths() {
+  m_cardinal_inner_spring_base_length = m_size / 3.0;
+  m_diagonal_inner_spring_base_legnth = glm::sqrt(2.0) * m_size / 3.0;
 }

@@ -6,49 +6,18 @@
 #include "app.hh"
 #include "buffer.hh"
 #include "camera.hh"
+#include "controllable_box.hh"
 #include "framebuffer.hh"
 #include "message_queue.hh"
+#include "model.hh"
 #include "shader_program.hh"
 #include "simulation.hh"
+#include "texture.hh"
 #include "vertex_array.hh"
 #include "jelly.hh"
 #include "jelly_ui.hh"
+#include "vertices.hh"
 #include "window.hh"
-
-struct Vertex {
-  glm::vec3 position;
-
-  Vertex() : position{0.0f, 0.0f, 0.0f} {}
-  Vertex(const glm::vec3& position) : position(position) {}
-
-  static std::vector<VertexAttribute> get_vertex_attributes() { return {{.size = 3, .type = GL_FLOAT}}; }
-};
-
-struct NormalVertex {
-  glm::vec3 position;
-  glm::vec3 normal;
-
-  NormalVertex() : position{0.0f, 0.0f, 0.0f}, normal{0.0f, 0.0f, 0.0f} {}
-  NormalVertex(const glm::vec3& position, const glm::vec3& normal) : position(position), normal(normal) {}
-
-  static std::vector<VertexAttribute> get_vertex_attributes() {
-    return {{.size = 3, .type = GL_FLOAT}, {.size = 3, .type = GL_FLOAT}};
-  }
-};
-
-struct TextureVertex {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 tex;
-
-  TextureVertex() : position{0.0f, 0.0f, 0.0f}, normal{0.0f, 0.0f, 0.0f}, tex{0.0f, 0.0f} {}
-  TextureVertex(const glm::vec3& position, const glm::vec3& normal, glm::vec2& tex)
-      : position(position), normal(normal), tex(tex) {}
-
-  static std::vector<VertexAttribute> get_vertex_attributes() {
-    return {{.size = 3, .type = GL_FLOAT}, {.size = 3, .type = GL_FLOAT}, {.size = 2, .type = GL_FLOAT}};
-  }
-};
 
 class JellyApp : public App {
  public:
@@ -65,18 +34,24 @@ class JellyApp : public App {
   std::unique_ptr<JellyUI> m_ui;
 
   std::unique_ptr<VertexArray<Vertex>> m_control_points_vertex_array;
-  std::unique_ptr<VertexArray<Vertex>> m_control_frame_vertex_array;
   std::unique_ptr<VertexArray<Vertex>> m_control_frame_springs_vertex_array;
-  std::unique_ptr<VertexArray<NormalVertex>> m_bounding_box_vertex_array;
+  std::unique_ptr<VertexArray<Vertex>> m_bezier_cube_vertex_array;
 
   std::unique_ptr<ShaderProgram> m_basic_shader;
   std::unique_ptr<ShaderProgram> m_phong_shader;
+  std::unique_ptr<ShaderProgram> m_bezier_cube_shader;
+  std::unique_ptr<ShaderProgram> m_model_shader;
+  std::unique_ptr<ShaderProgram> m_wireframe_shader;
+
+  std::unique_ptr<Texture> m_bezier_cube_texture;
+  std::unique_ptr<Model> m_model = nullptr;
+  std::unique_ptr<ControllableBox> m_bounding_box;
+  std::unique_ptr<ControllableBox> m_control_frame;
 
   std::vector<Vertex> m_control_points_vertices_staging = {};
   std::vector<Vertex> m_control_frame_springs_vertices_staging = {};
 
-  glm::mat4 m_control_frame_model_mat = glm::mat4(1.0f);
-  glm::mat4 m_bounding_box_model_mat = glm::scale(glm::mat4(1.0f), glm::vec3(6.0f, 6.0f, 6.0f));
+  std::array<glm::vec3, 64> m_points_vertices = {};
 
   std::mutex m_visualization_mtx;
 

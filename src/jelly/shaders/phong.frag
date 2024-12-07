@@ -6,34 +6,29 @@ in VS_OUT {
 }
 fsIn;
 
-const vec3 lightPos = vec3(0.0, 3.1, 0.0);
+const vec3 lightPos = vec3(2.0, 2.1, 0.0);
+const vec3 ambientColor = vec3(0.7, 0.7, 0.7);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
-const float lightIntensity = 5.0;
-const vec3 ambientColor = vec3(0.1, 0.1, 0.1);
-const vec3 specularColor = vec3(1.0, 1.0, 1.0);
-const float shininess = 8.0;
+const float kd = 0.5, ks = 0.7, m = 150.0;
 
-uniform vec4 color;
 uniform mat4 view;
+uniform vec4 color;
 
 out vec4 FragColor;
 
 void main() {
+  vec3 camPos = vec3(inverse(view) * vec4(0.0, 0.0, 0.0, 1.0));
+
+  vec3 V = normalize(camPos.xyz - fsIn.pos);
   vec3 N = normalize(fsIn.norm);
-  vec3 L = lightPos - fsIn.pos;
-  float distance = dot(L, L);
-  L = normalize(L);
-
-  float diffuse = max(dot(L, N), 0.0);
-  float specular = 0.0;
-
-  if (diffuse > 0.0) {
-    vec3 V = vec3(normalize(inverse(view) * vec4(0.0, 0.0, 0.0, 1.0)));
-
-    vec3 H = normalize(L + V);
-    specular = pow(max(dot(H, N), 0.0), shininess);
+  vec3 finalColor = color.rgb * ambientColor;
+  vec3 L = normalize(lightPos.xyz - fsIn.pos);
+  vec3 H = normalize(V + L);
+  finalColor += lightColor * color.rgb * kd * clamp(dot(N, L), 0.0, 1.0);
+  if (dot(N, vec3(0.0, 1.0, 0.0)) > 0.0) {
+    float nh = clamp(dot(N, H), 0.0, 1.0);
+    nh = pow(nh, m) * ks;
+    finalColor += lightColor * nh;
   }
-  vec3 outColor = ambientColor + color.rgb * diffuse * lightColor * lightIntensity / distance +
-                  specularColor * specular * lightColor * lightIntensity / distance;
-  FragColor = vec4(outColor, color.a);
+  FragColor =  vec4(clamp(finalColor, 0.0, 1.0), color.a);
 }
