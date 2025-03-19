@@ -1,8 +1,13 @@
 # Simulations
 
-## Spring
+## Jelly
+[jelly2.webm](https://github.com/user-attachments/assets/b991bd24-df52-43ea-abad-d82998e0eee6)
 
-Spring generation:
-- issue draw call with empty vertex buffer, LINE_STRIP and vertex count equal to helix length density
-- vertex shader generates helix isoline points based on parameters
-- tessellation shader takes two-point isolines, generates points around helix isoline beg and end, and emits triangles
+
+## Whirligig
+[whirligig.webm](https://github.com/user-attachments/assets/7eaba413-769e-4de9-b79a-e3a73ce06bde)
+
+
+## Spring
+[spring.webm](https://github.com/user-attachments/assets/bf8c8312-a740-4f71-92b7-8cc09d35d58a)
+
