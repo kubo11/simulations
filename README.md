@@ -1,5 +1,5 @@
 # Simulations
-This repository contains 3 separate physical simulation. They are based on numerical solution of equations of motion. The simulations are computed on a side thread while main thread handles graphics and communication. As a consequence the simulation and it's visualization can run at different rates.
+This repository contains 3 separate physics simulations. They are based on numerical solution of equations of motion. The simulations are computed on a side thread while main thread handles graphics and communication. As a consequence the simulation and it's visualization can run at different rates.
 The camera orbits center of the scene. To spin around hold ctrl + lmb and drag mouse. To zoom hold ctrl and scroll up/down. Skip button allows to advance the simulation by a set number of frames.
 
 ## Jelly
