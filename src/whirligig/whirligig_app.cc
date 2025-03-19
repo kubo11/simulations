@@ -161,8 +161,8 @@ void WhirligigApp::render_visualization() {
     m_basic_shader->set_and_commit_uniform_value("color", glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
     m_trajectory_vertex_array->bind();
     glDisable(GL_CULL_FACE);
-    glDrawArrays(GL_LINE_STRIP, 0, m_trajectory_offset-10);
-    glDrawArrays(GL_LINE_STRIP, m_trajectory_offset, m_trajectory_vertex_array->get_draw_size() - m_trajectory_offset);
+    glDrawArrays(GL_LINE_STRIP, 0, m_trajectory_offset);
+    glDrawArrays(GL_LINE_STRIP, m_trajectory_offset, std::max(0u, m_trajectory_vertex_array->get_draw_size() - m_trajectory_offset));
     glEnable(GL_CULL_FACE);
     m_trajectory_vertex_array->unbind();
     m_basic_shader->unbind();
@@ -228,7 +228,8 @@ void WhirligigApp::handle_message(WhirligigMessage msg) {
     });
     m_simulation->set_dt(m_ui->get_dt());
     m_trajectory_length = m_ui->get_trajectory_length();
-    m_trajectory_offset = std::min(m_trajectory_offset, m_trajectory_length);
+    m_trajectory_offset = 0;
+    m_trajectory_vertices.clear();
     m_trajectory_vertices.resize(m_trajectory_length, Vertex{{0.0f, 0.0f, 0.0f}});
     break;
 
