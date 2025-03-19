@@ -75,12 +75,15 @@ class Simulation {
         std::lock_guard<std::mutex> guard(m_simulation_mtx);
 
         if (!m_run) return;
-        m_simulatable.update(loop_dt);
-        m_update_callback(m_simulatable);
+        
         if (m_skip_frames_count > 0) {
           --m_skip_frames_count;
+          m_simulatable.update(m_dt);
+          m_update_callback(m_simulatable);
           continue;
         }
+        m_simulatable.update(loop_dt);
+        m_update_callback(m_simulatable);
       }
       curr_time = std::chrono::high_resolution_clock::now();
       auto step_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - m_prev_time).count();
