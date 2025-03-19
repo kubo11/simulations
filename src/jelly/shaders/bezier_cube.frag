@@ -8,7 +8,7 @@ in TES_OUT {
 fsIn;
 
 const vec3 lightPos = vec3(2.0, 2.1, 0.0);
-const vec3 ambientColor = vec3(0.3, 0.3, 0.3);
+const vec3 ambientColor = vec3(0.4, 0.4, 0.4);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 const float kd = 0.7, ks = 0.7, m = 120.0;
 
@@ -30,5 +30,4 @@ void main() {
   nh = pow(nh, m) * ks;
   finalColor += lightColor * nh;
   FragColor =  vec4(clamp(finalColor, 0.0, 1.0), baseColor.a);
-  //FragColor =  vec4(0.5 + 0.5 * fsIn.norm, baseColor.a);
 }

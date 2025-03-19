@@ -172,10 +172,11 @@ void JellyApp::render_visualization() {
     m_basic_shader->unbind();
   }
 
+  glEnable(GL_DEPTH_TEST);
+
   if (m_ui->show_control_frame()) {
     m_control_frame->draw_wireframe(*m_wireframe_shader);
   }
-  glEnable(GL_DEPTH_TEST);
 }
 
 void JellyApp::update_visualization_data(const Jelly& jelly) {

@@ -40,5 +40,4 @@ void main() {
   nh = pow(nh, m) * ks;
   finalColor += lightColor * nh;
   FragColor =  vec4(clamp(finalColor, 0.0, 1.0), baseColor.a);
-  //FragColor =  vec4(0.5 + 0.5 * fsIn.norm, baseColor.a);
 }
