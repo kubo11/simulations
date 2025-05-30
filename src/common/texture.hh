@@ -25,15 +25,16 @@ class Texture {
 
   unsigned int get_width() const;
   unsigned int get_heioght() const;
+
+  static GLenum texture_wrapping_to_gl(TextureWrapping wrapping);
+  static GLenum texture_filtering_to_gl(TextureFiltering filtering);
+
  private:
   GLuint m_id;
   unsigned int m_width;
   unsigned int m_height;
 
   Texture(unsigned char* data, unsigned int width, unsigned int height, unsigned int channels, const TextureConfig& config);
-
-  static GLenum texture_wrapping_to_gl(TextureWrapping wrapping);
-  static GLenum texture_filtering_to_gl(TextureFiltering filtering);
 };
 
 #endif // SIMULATIONS_COMMON_TEXTURE

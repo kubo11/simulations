@@ -9,6 +9,7 @@ App::App(const std::string& name) : m_reference_time(std::chrono::high_resolutio
   glfwSetFramebufferSizeCallback(m_window->get_instance(), App::framebuffer_resize_callback);
   glfwSetCursorPosCallback(m_window->get_instance(), App::mouse_position_callback);
   glfwSetScrollCallback(m_window->get_instance(), App::scroll_callback);
+  glfwSetKeyCallback(m_window->get_instance(), App::keyboard_callback);
 
   auto res = gladLoadGL(glfwGetProcAddress);
   if (res == 0) {
@@ -21,7 +22,7 @@ App::App(const std::string& name) : m_reference_time(std::chrono::high_resolutio
   glEnable(GL_MULTISAMPLE);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 8.0f, 1.6f, 64.0f, 45.0f,
+  m_camera = std::make_unique<Camera>(glm::vec3{0.0f, 0.0f, 0.0f}, 0.0f, 0.0f, 4.0f, 1.6f, 8.0f, 90.0f,
                                       m_window->get_aspect_ratio(), 0.5f, 500.0f);
 }
 
@@ -64,5 +65,12 @@ void App::scroll_callback(GLFWwindow* window, double, double yoffset) {
   App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
   if (glfwGetKey(app->m_window->get_instance(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
     app->m_camera->zoom(-yoffset, 0.01f);
+  }
+}
+
+void App::keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  App* app = static_cast<App*>(glfwGetWindowUserPointer(window));
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    app->m_run = false;
   }
 }

@@ -55,9 +55,6 @@ namespace fs = std::filesystem;
 #include <misc/cpp/imgui_stdlib.h>
 #include <ImGuiFileDialog.h>
 
-// // stb
-// #include "stb_image.h"
-
 // tinyobjloader
 #include <tiny_obj_loader.h>
 

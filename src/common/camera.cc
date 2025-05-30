@@ -38,6 +38,31 @@ void Camera::zoom(float zoom, float dt) {
   m_update_camera_vectors = true;
 }
 
+void Camera::set_rotation(glm::vec2 rotation) {
+  m_yaw = rotation.x;
+  m_pitch = rotation.y;
+  clamp_angles();
+  m_update_view = true;
+  m_update_camera_vectors = true;
+}
+
+void Camera::set_distance(float dist) {
+  m_dist = dist;
+  clamp_distance();
+  m_update_view = true;
+  m_update_camera_vectors = true;
+}
+
+void Camera::set_min_dist(float min_dist) {
+  m_min_dist = min_dist;
+  clamp_distance();
+}
+
+void Camera::set_max_dist(float max_dist) {
+  m_max_dist = max_dist;
+  clamp_distance();
+}
+
 void Camera::update_camera_vectors() {
   m_pos = {m_target_pos.x + m_dist * cos(m_pitch) * sin(m_yaw), m_target_pos.y + m_dist * sin(m_pitch),
            m_target_pos.z + m_dist * cos(m_pitch) * cos(m_yaw)};

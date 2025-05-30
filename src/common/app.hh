@@ -17,6 +17,7 @@ class App {
   static void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
   static void mouse_position_callback(GLFWwindow* window, double xpos, double ypos);
   static void scroll_callback(GLFWwindow* window, double, double yoffset);
+  static void keyboard_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
  protected:
   bool m_run = true;

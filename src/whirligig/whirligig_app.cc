@@ -4,6 +4,7 @@ WhirligigApp::WhirligigApp() : App("Whirligig"), m_visualization_mtx() {
   glDisable(GL_DEPTH_TEST);
 
   m_camera->rotate(glm::vec2(0.0f, 4.0f), 1e-3f);
+  m_camera->set_min_dist(2.0f);
 
   auto [message_queue_reader, message_queue_writer] = MessageQueue<WhirligigMessage>::create();
   m_message_queue = std::move(message_queue_reader);

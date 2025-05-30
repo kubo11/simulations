@@ -20,6 +20,12 @@ class Camera {
   void rotate(glm::vec2 offset, float dt);
   void zoom(float zoom, float dt);
 
+  void set_rotation(glm::vec2 rotation);
+  void set_distance(float dist);
+
+  void set_min_dist(float min_dist);
+  void set_max_dist(float max_dist);
+
   const float get_aspect_ratio() const { return m_aspect_ratio; }
   const float get_near_plane() const { return m_near_plane; }
   const float get_far_plane() const { return m_far_plane; }

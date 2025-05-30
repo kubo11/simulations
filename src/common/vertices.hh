@@ -5,6 +5,15 @@
 
 #include "vertex_array.hh"
 
+struct UVVertex {
+  glm::vec2 uv;
+
+  UVVertex() : uv{0.0f, 0.0f} {}
+  UVVertex(const glm::vec2& uv) : uv(uv) {}
+
+  static std::vector<VertexAttribute> get_vertex_attributes() { return {{.size = 2, .type = GL_FLOAT}}; }
+};
+
 struct Vertex {
   glm::vec3 position;
 
