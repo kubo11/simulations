@@ -27,8 +27,8 @@ Ray getRay() {
   vec2 xy = 2.0 * uv - 1.0;
 
   vec4 from = invProjView * vec4(xy, -1.0, 1.0);
-  vec4 to = invProjView * vec4(xy, 1.0, 1.0);
   from /= from.w;
+  vec4 to = invProjView * vec4(xy, 1.0, 1.0);
   to /= to.w;
 
   ray.beg = from.xyz;
@@ -54,7 +54,7 @@ float fs(float w, float M, float b) {
   return pow(f(w, M, b), -0.5);
 }
 
-float FindUpperLimit(float M, float b) {
+float findUpperLimit(float M, float b) {
   float w = 1.0;
   float limit;
   int count = 0;
@@ -97,7 +97,7 @@ void main() {
   Ray ray = getRay();
   float b = distance(blackHolePosition, ray);
 
-  float upperLimit = FindUpperLimit(blackHoleMass, b);
+  float upperLimit = findUpperLimit(blackHoleMass, b);
   if(upperLimit < 0.0) {
     FragColor = vec4(0.0, 0.0, 0.0, 1.0);
     return;
