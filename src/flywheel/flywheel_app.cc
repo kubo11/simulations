@@ -7,6 +7,8 @@ FlywheelApp::FlywheelApp() : App("Flywheel") {
   m_camera->set_aspect_ratio(m_framebuffer->get_aspect_ratio());
   m_camera->set_fov(glm::degrees(2.0f * atanf( tanf(glm::radians(90.0f) * 0.5f) / m_framebuffer->get_aspect_ratio() )));
   m_camera->set_rotation({glm::half_pi<float>(), 0.0f});
+  m_camera->set_distance(6.0f);
+  m_camera->set_max_dist(20.0f);
 
   auto [message_queue_reader, message_queue_writer] = MessageQueue<FlywheelMessage>::create();
   m_message_queue = std::move(message_queue_reader);
@@ -65,21 +67,22 @@ void FlywheelApp::framebuffer_resize_callback(GLFWwindow* window, int width, int
 
 void FlywheelApp::update_visualization_data(const Flywheel& flywheel) {
   {
-    auto model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+    auto offset = (flywheel.get_length() + 1.0f) / 2.0f;
+    auto model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, offset));
     model = glm::scale(model, glm::vec3(1.0f, flywheel.get_radius(), flywheel.get_radius()));
     m_flywheel_model->set_model_mat(model);
   }
   {
     float py = std::sin(flywheel.get_angle()) * flywheel.get_radius();
     float s =  py / flywheel.get_current_length();
-    auto offset = -flywheel.get_piston_position();
+    auto offset = -flywheel.get_piston_position() + (flywheel.get_length() + 1.0f) / 2.0f;
     auto model = glm::translate(glm::mat4(1.0f), glm::vec3(0.35f, 0.0f, offset));
     model = glm::rotate(model, static_cast<float>(-std::asin(s)), {1.0f, 0.0f, 0.0f});
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, flywheel.get_current_length()));
     m_handle_model->set_model_mat(model);
   }
   {
-    auto offset = -0.5f-flywheel.get_piston_position();
+    auto offset = -0.5f-flywheel.get_piston_position() + (flywheel.get_length() + 1.0f) / 2.0f;
     auto model = glm::translate(glm::mat4(1.0f), glm::vec3(0.35f, 0.0f, offset));
     m_piston_model->set_model_mat(model);
   }
@@ -106,8 +109,9 @@ void FlywheelApp::handle_message(FlywheelMessage msg) {
     break;
 
   case FlywheelMessage::Apply:
-    m_flywheel_simulation->apply([&ui = *m_ui](Flywheel& flywheel){
+    m_flywheel_simulation->apply([&ui = *m_ui, &sim = *m_flywheel_simulation](Flywheel& flywheel){
       ui.update_flywheel_parameters(flywheel);
+      if (!sim.is_running()) flywheel.update(ui.get_dt());
     });
     m_flywheel_simulation->set_dt(m_ui->get_dt());
     break;

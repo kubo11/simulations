@@ -40,6 +40,8 @@ class FlywheelUI : public UI {
   float m_length = 2.0f;
   float m_standard_deviation = 0.0f;
   int m_skip_frames = 100;
+  bool m_autofit_x = true;
+  bool m_autofit_y = true;
 
   std::mutex m_ui_mtx;
 
@@ -59,8 +61,9 @@ class FlywheelUI : public UI {
   bool m_skip_button_enabled = false;
 
   void show_property_panel();
-  void show_pos_vel_acc_graph();
-  void show_forces_graph();
+  void show_pos_graph();
+  void show_vel_graph();
+  void show_acc_graph();
   void show_trajectory_graph();
   void show_visulaization();
 };

@@ -49,8 +49,9 @@ void FlywheelUI::draw() {
   ImGui::SetNextWindowSize(ImVec2(m_window.get_width(), m_window.get_height()));
   if (ImGui::Begin("Flywheel", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove)) {
     show_property_panel();
-    show_pos_vel_acc_graph();
-    show_forces_graph();
+    show_pos_graph();
+    show_vel_graph();
+    show_acc_graph();
     show_trajectory_graph();
     show_visulaization();
   }
@@ -58,8 +59,8 @@ void FlywheelUI::draw() {
 }
 
 void FlywheelUI::show_property_panel() {
-  ImGui::SetNextWindowPos(ImVec2(0, 0));
-  ImGui::BeginChild("properties", ImVec2(0.2 * m_window.get_width(), m_window.get_height()),
+  ImGui::SetNextWindowPos(ImVec2(0.7 * m_window.get_width(), 0));
+  ImGui::BeginChild("properties", ImVec2(0.3 * m_window.get_width(), 0.5 * m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
   ImVec2 size = ImGui::GetItemRectSize();
   size.x = (size.x - 2.0f * ImGui::GetStyle().ItemSpacing.x - 2.0f * ImGui::GetStyle().WindowPadding.x) / 3.0f;
@@ -137,42 +138,66 @@ void FlywheelUI::show_property_panel() {
   }
   ImGui::EndDisabled();
 
+  ImGui::Text("Autofit plot axes: ");
+  ImGui::SameLine();
+  ImGui::Checkbox("X", &m_autofit_x);
+  ImGui::SameLine();
+  ImGui::Checkbox("Y", &m_autofit_y);
+
   ImGui::EndChild();
 }
 
-void FlywheelUI::show_pos_vel_acc_graph() {
-  ImGui::SetNextWindowPos(ImVec2(0.2 * m_window.get_width(), 0.7 * m_window.get_height()));
-  ImGui::BeginChild("pos_vel_acc_panel", ImVec2(0.5 * m_window.get_width(), 0.3 * m_window.get_height()),
+void FlywheelUI::show_pos_graph() {
+  ImGui::SetNextWindowPos(ImVec2(0.0, 0.7 * m_window.get_height()));
+  ImGui::BeginChild("pos_panel", ImVec2(0.7 * m_window.get_width() / 3.0f, 0.3 * m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
   static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Position, velocity and acceleration", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    if (ImPlot::BeginPlot("Position", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+      axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
-      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit;
-      // ImPlot::PlotLine("Position", m_time.data(), m_weight_position.data(), m_time.size());
-      // ImPlot::PlotLine("Velocity", m_time.data(), m_weight_velocity.data(), m_time.size());
-      // ImPlot::PlotLine("Acceleration", m_time.data(), m_weight_acceleration.data(), m_time.size());
+      ImPlot::PlotLine("Position", m_time.data(), m_piston_position.data(), m_time.size());
     }
     ImPlot::EndPlot();
   }
   ImGui::EndChild();
 }
 
-void FlywheelUI::show_forces_graph() {
-  ImGui::SetNextWindowPos(ImVec2(0.7 * m_window.get_width(), 0));
-  ImGui::BeginChild("forces_panel", ImVec2(0.3 * m_window.get_width(), 0.5 * m_window.get_height()),
+void FlywheelUI::show_vel_graph() {
+  ImGui::SetNextWindowPos(ImVec2(0.7 * m_window.get_width() / 3.0f, 0.7 * m_window.get_height()));
+  ImGui::BeginChild("velpanel", ImVec2(0.7 * m_window.get_width() / 3.0f, 0.3 * m_window.get_height()),
                     ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
   static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Forces", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    if (ImPlot::BeginPlot("Velocity", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+      axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
-      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit;
-      // ImPlot::PlotLine("f(t)", m_time.data(), m_elasticity_force.data(), m_time.size());
-      // ImPlot::PlotLine("g(t)", m_time.data(), m_damping_force.data(), m_time.size());
-      // ImPlot::PlotLine("h(t)", m_time.data(), m_field_force.data(), m_time.size());
-      // ImPlot::PlotLine("w(t)", m_time.data(), m_rest_position.data(), m_time.size());
+      ImPlot::PlotLine("Velocity", m_time.data(), m_piston_velocity.data(), m_time.size());
+    }
+    ImPlot::EndPlot();
+  }
+  ImGui::EndChild();
+}
+
+void FlywheelUI::show_acc_graph() {
+  ImGui::SetNextWindowPos(ImVec2(0.7 * m_window.get_width() / 3.0f * 2.0f, 0.7 * m_window.get_height()));
+  ImGui::BeginChild("acc_panel", ImVec2(0.7 * m_window.get_width() / 3.0f, 0.3 * m_window.get_height()),
+                    ImGuiChildFlags_AlwaysUseWindowPadding, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+  static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
+  {
+    std::lock_guard<std::mutex> guard(m_ui_mtx);
+    if (ImPlot::BeginPlot("Acceleration", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+      axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      ImPlot::PlotLine("Acceleration", m_time.data(), m_piston_acceleration.data(), m_time.size());
     }
     ImPlot::EndPlot();
   }
@@ -187,9 +212,10 @@ void FlywheelUI::show_trajectory_graph() {
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
     if (ImPlot::BeginPlot("Trajectory", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+      axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
       ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
-      axis_flags = ImPlot::IsPlotHovered() ? ImPlotAxisFlags_None : ImPlotAxisFlags_AutoFit;
       ImPlot::PlotLine("", m_piston_position.data(), m_piston_velocity.data(), m_time.size());
     }
     ImPlot::EndPlot();
@@ -199,8 +225,8 @@ void FlywheelUI::show_trajectory_graph() {
 
 void FlywheelUI::show_visulaization() {
   auto padding = ImGui::GetStyle().WindowPadding;
-  auto window_pos = ImVec2(0.2 * m_window.get_width(), 0);
-  auto window_size = ImVec2(0.5 * m_window.get_width(), 0.7 * m_window.get_height());
+  auto window_pos = ImVec2(0, 0);
+  auto window_size = ImVec2(0.7 * m_window.get_width(), 0.7 * m_window.get_height());
   ImGui::SetNextWindowPos(window_pos);
   ImGui::BeginChild("visualization", window_size, ImGuiChildFlags_AlwaysUseWindowPadding,
                     ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);

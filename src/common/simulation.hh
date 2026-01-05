@@ -55,6 +55,10 @@ class Simulation {
     m_dt = dt;
   }
 
+  bool is_running() const {
+    return m_run;
+  }
+
  private:
   float m_dt = 0.001f;
   bool m_run = false;

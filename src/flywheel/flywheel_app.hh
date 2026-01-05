@@ -17,7 +17,7 @@
 #include "model.hh"
 
 class FlywheelApp : public App {
- static constexpr glm::vec2 m_frame_size_multiplier = {0.5f, 0.7f};
+ static constexpr glm::vec2 m_frame_size_multiplier = {0.7f, 0.7f};
  public:
   FlywheelApp();
   virtual ~FlywheelApp() override;

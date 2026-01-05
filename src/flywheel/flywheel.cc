@@ -34,7 +34,7 @@ void Flywheel::reset() {
   m_piston_velocity = 0.0f;
   m_piston_acceleration = 0.0f;
   m_angle = 0.0f;
-  m_current_length = add_error(m_length);
+  m_current_length = m_length;
 }
 
 float Flywheel::add_error(float length) {
