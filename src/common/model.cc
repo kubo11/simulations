@@ -93,6 +93,10 @@ const glm::mat4& Model::get_model_mat() const {
   return m_model_mat;
 }
 
+Material& Model::get_material() {
+  return *m_material;
+}
+
 void Model::set_model_mat(const glm::mat4& model_mat) {
   m_model_mat = model_mat;
 }

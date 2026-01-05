@@ -14,6 +14,7 @@ struct Colors {
   static constexpr Color Red = {1.0f, 0.0f, 0.0f, 1.0f};
   static constexpr Color Green = {0.0f, 1.0f, 0.0f, 1.0f};
   static constexpr Color Blue = {0.0f, 0.0f, 1.0f, 1.0f}; 
+  static constexpr Color Orange = {1.0f, 0.5f, 0.0f, 1.0f};
 };
 
 class Material {
@@ -25,6 +26,8 @@ class Material {
 
   void bind(ShaderProgram& shader);
   void unbind();
+
+  void set_color(const Color& color);
   
  private:
   Color m_color = Colors::White;

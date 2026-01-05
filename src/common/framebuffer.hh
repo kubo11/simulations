@@ -15,6 +15,7 @@ class Framebuffer {
   void unbind();
 
   GLuint get_texture_id() const;
+  float get_aspect_ratio() const;
 
  private:
   unsigned int m_width;
@@ -22,6 +23,10 @@ class Framebuffer {
   GLuint m_fbo;
   GLuint m_rbo;
   GLuint m_texture_id;
+  GLint m_prev_viewport[4];
+
+  void create();
+  void destroy();
 };
 
 #endif  // SIMULATIONS_COMMON_FRAMEBUFFER

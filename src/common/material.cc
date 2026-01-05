@@ -27,3 +27,7 @@ void Material::unbind() {
   if (m_diffuse) m_diffuse->unbind();
   if (m_normal) m_normal->unbind();
 }
+
+void Material::set_color(const Color& color) {
+  m_color = color;
+}
