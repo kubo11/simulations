@@ -71,6 +71,7 @@ class Simulation {
 
   void loop() {
     m_prev_time = std::chrono::high_resolution_clock::now();
+    std::this_thread::sleep_for(std::chrono::duration<float, std::chrono::seconds::period>(m_dt));
     while (true) {
       auto curr_time = std::chrono::high_resolution_clock::now();
       auto loop_dt = std::chrono::duration<float, std::chrono::seconds::period>(curr_time - m_prev_time).count();

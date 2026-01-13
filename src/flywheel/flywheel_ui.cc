@@ -120,7 +120,7 @@ void FlywheelUI::show_property_panel() {
     if (ImGui::DragFloat("##dt", &m_dt, 0.05f, 0.0f, 10.0f)) m_apply_button_enabled = true;
     ImGui::Text("R:   ");
     ImGui::SameLine();
-    if (ImGui::DragFloat("##R", &m_radius, 0.05f, 0.1f, 10.0f)) m_apply_button_enabled = true;
+    if (ImGui::DragFloat("##R", &m_radius, 0.05f, 0.1f, m_length / 2.0f)) m_apply_button_enabled = true;
     ImGui::Text("L:   ");
     ImGui::SameLine();
     if (ImGui::DragFloat("##L", &m_length, 0.05f, 2.0f*m_radius, 10.0f)) m_apply_button_enabled = true;
@@ -154,11 +154,11 @@ void FlywheelUI::show_pos_graph() {
   static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Position", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    if (ImPlot::BeginPlot("Position", ImVec2(-1, -1), ImPlotFlags_Equal | ImPlotFlags_NoLegend)) {
       axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_X1, "t", axis_flags);
       axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_Y1, "x", axis_flags);
       ImPlot::PlotLine("Position", m_time.data(), m_piston_position.data(), m_time.size());
     }
     ImPlot::EndPlot();
@@ -173,11 +173,11 @@ void FlywheelUI::show_vel_graph() {
   static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Velocity", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    if (ImPlot::BeginPlot("Velocity", ImVec2(-1, -1), ImPlotFlags_Equal | ImPlotFlags_NoLegend)) {
       axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_X1, "t", axis_flags);
       axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_Y1, "x'", axis_flags);
       ImPlot::PlotLine("Velocity", m_time.data(), m_piston_velocity.data(), m_time.size());
     }
     ImPlot::EndPlot();
@@ -192,11 +192,11 @@ void FlywheelUI::show_acc_graph() {
   static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Acceleration", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    if (ImPlot::BeginPlot("Acceleration", ImVec2(-1, -1), ImPlotFlags_Equal | ImPlotFlags_NoLegend)) {
       axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_X1, "t", axis_flags);
       axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_Y1, "x''", axis_flags);
       ImPlot::PlotLine("Acceleration", m_time.data(), m_piston_acceleration.data(), m_time.size());
     }
     ImPlot::EndPlot();
@@ -211,11 +211,11 @@ void FlywheelUI::show_trajectory_graph() {
   static ImPlotAxisFlags axis_flags = ImPlotAxisFlags_None;
   {
     std::lock_guard<std::mutex> guard(m_ui_mtx);
-    if (ImPlot::BeginPlot("Trajectory", ImVec2(-1, -1), ImPlotFlags_Equal)) {
+    if (ImPlot::BeginPlot("Trajectory", ImVec2(-1, -1), ImPlotFlags_Equal | ImPlotFlags_NoLegend)) {
       axis_flags = m_autofit_x ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_X1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_X1, "x", axis_flags);
       axis_flags = m_autofit_y ? ImPlotAxisFlags_AutoFit : ImPlotAxisFlags_None;
-      ImPlot::SetupAxis(ImAxis_Y1, nullptr, axis_flags);
+      ImPlot::SetupAxis(ImAxis_Y1, "x'", axis_flags);
       ImPlot::PlotLine("", m_piston_position.data(), m_piston_velocity.data(), m_time.size());
     }
     ImPlot::EndPlot();

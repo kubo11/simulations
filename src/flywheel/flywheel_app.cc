@@ -114,6 +114,7 @@ void FlywheelApp::handle_message(FlywheelMessage msg) {
       if (!sim.is_running()) flywheel.update(ui.get_dt());
     });
     m_flywheel_simulation->set_dt(m_ui->get_dt());
+    m_ui->clear();
     break;
 
   case FlywheelMessage::Skip:
